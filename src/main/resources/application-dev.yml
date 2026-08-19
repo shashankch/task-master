@@ -1,0 +1,60 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskmaster
+    username: taskmaster
+    password: taskmaster_dev
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: TaskMasterDevHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+  cloud:
+    stream:
+      bindings:
+        taskEvents-out-0:
+          destination: task.events
+          content-type: application/json
+        taskNotifications-in-0:
+          destination: task.events
+          group: notification-service-group
+          content-type: application/json
+      rabbit:
+        bindings:
+          taskEvents-out-0:
+            producer:
+              exchange-type: topic
+              routing-key-expression: '''task.event.''' + payload.eventType
+          taskNotifications-in-0:
+            consumer:
+              binding-routing-key: task.event.#
+              auto-bind-dlq: true
+              republish-to-dlq: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: taskmaster
+    password: taskmaster_dev
+
+logging:
+  level:
+    root: INFO
+    com.taskmaster: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
