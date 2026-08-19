@@ -68,7 +68,7 @@ out/
 *.key
 *.p12
 
-# Internal Documentation / Planning (STRICTLY PROHIBITED FROM COMMIT)
+# Internal Documentation / Planning (not to be committed)
 internal/
 internal/*
 

@@ -1,0 +1,58 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: TaskMasterProdHikariPool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${SPRING_REDIS_SSL:false}
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:taskmaster}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    ssl:
+      enabled: ${SPRING_RABBITMQ_SSL:false}
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+
+app:
+  storage:
+    type: s3
+    s3:
+      endpoint: ${AWS_S3_ENDPOINT:}
+      region: ${AWS_REGION:us-east-1}
+      bucket-name: ${AWS_S3_BUCKET:taskmaster-attachments}
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+      path-style-access-enabled: ${AWS_S3_PATH_STYLE:false}
+
+logging:
+  level:
+    root: INFO
+    com.taskmaster: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
