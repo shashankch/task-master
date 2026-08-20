@@ -13,12 +13,13 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Architectural constraints enforcement with ArchUnit
   - API documentation baseline with OpenAPI 3.1 / Swagger UI
 
-- ⬜ **Phase 2: User Authentication & Authorization**
+- ✅ **Phase 2: User Authentication & Authorization**
   - User registration, login, and profile lifecycle management
   - Asymmetric RS256 JWT access tokens with JWKS rotation endpoint
   - Refresh token rotation with family-based replay attack mitigation
   - Role-based method-level security (`@PreAuthorize`)
   - Redis sliding window rate limiting on auth endpoints
+  - Baseline GitHub Actions CI/CD automated workflow
 
 - ⬜ **Phase 3: Task Management**
   - Full CRUD operations with soft deletion and optimistic locking
