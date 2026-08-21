@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-08-20
+
+### Added
+- User registration and authentication endpoints (`/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logout`).
+- Asymmetric RS256 JWT access token generation and public JWKS endpoint (`/.well-known/jwks.json`).
+- Refresh token rotation with family-based token replay attack detection and automatic family revocation.
+- Spring Security OAuth2 Resource Server integration with role-based authorities mapping.
+- User profile management endpoints (`/api/v1/users/me` [GET, PUT]).
+- Redis-backed distributed sliding-window rate limiting with in-memory fallback on authentication endpoints.
+- Database migrations for `users` (`V2`) and `refresh_tokens` (`V3`) tables with foreign keys and indexes.
+- Baseline GitHub Actions CI/CD workflow (`.github/workflows/ci.yml`) for automated builds, linting, and tests.
+- Comprehensive unit and integration test suite covering end-to-end authentication lifecycle.
+
+---
+
 ## [0.1.0] - 2026-08-20
 
 ### Added

@@ -83,6 +83,10 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs(
+        "-Dnet.bytebuddy.experimental=true",
+        "-XX:+EnableDynamicAgentLoading"
+    )
     testLogging {
         events("passed", "skipped", "failed")
     }
