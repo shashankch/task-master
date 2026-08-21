@@ -60,7 +60,8 @@ public class RateLimiterService {
                     throw new RateLimitExceededException("Too many requests. Please try again later.", windowSeconds);
                 }
 
-                redisTemplate.opsForZSet().add(redisKey, String.valueOf(now), now);
+                String member = now + ":" + java.util.UUID.randomUUID();
+                redisTemplate.opsForZSet().add(redisKey, member, now);
                 redisTemplate.expire(redisKey, java.time.Duration.ofSeconds(windowSeconds * 2L));
                 return;
             } catch (RateLimitExceededException e) {
