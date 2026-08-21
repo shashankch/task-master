@@ -11,6 +11,7 @@ CREATE TABLE refresh_tokens (
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uk_refresh_tokens_hash UNIQUE (token_hash)
 );
 
