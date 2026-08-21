@@ -75,11 +75,21 @@ The application starts on `http://localhost:8080`.
 
 ---
 
-## 📖 API Documentation
+## 📖 API Documentation & Endpoints
 
-Once the application is running, access the interactive Swagger UI at:
-- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+TaskMaster exposes a versioned, RESTful API secured by asymmetric RS256 JWTs with RFC 7807 error envelopes.
+
+- 📘 **Complete Specification & Payloads**: See [docs/api-specification.md](./docs/api-specification.md)
+- 🖥️ **Interactive Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- ⚙️ **OpenAPI JSON Schema**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
+### API Module Overview
+
+| Module | Base Path | Key Capabilities | Auth Required |
+|:---|:---|:---|:---|
+| **Authentication** | `/api/v1/auth` | User registration, login, refresh token rotation, logout, and public JWKS keys | No (Rate Limited) |
+| **User Profile** | `/api/v1/users` | Profile retrieval and display name/avatar updates | Yes (Bearer JWT) |
+| **Task Management** | `/api/v1/tasks` | CRUD, lifecycle state transitions, assignee assignment, JPA criteria filtering, full-text search, and soft deletion | Yes (Bearer JWT) |
 
 ---
 
@@ -99,19 +109,19 @@ Run static analysis and style checks:
 
 ## 🗺️ Product Roadmap
 
-Track current implementation progress across release phases:
+Track implementation progress across release phases:
 
-- 🔄 **Phase 1: Foundation & Project Setup** (`v0.1.0`)
-- ⬜ **Phase 2: User Authentication & Authorization** (`v0.2.0`)
-- ⬜ **Phase 3: Task Management** (`v0.3.0`)
-- ⬜ **Phase 4: Team Collaboration** (`v0.4.0`)
-- ⬜ **Phase 5: Real-time Notifications & AI Integration** (`v1.0.0`)
-- ⬜ **Phase 6: Advanced Search & Analytics** (`v1.1.0`)
-- ⬜ **Phase 7: Performance & Reliability** (`v1.2.0`)
-- ⬜ **Phase 8: DevOps & Cloud Deployment** (`v1.3.0`)
-- ⬜ **Phase 9: Extended Platform Capabilities** (`v1.4.0`+)
+- ✅ **Phase 1: Foundation & Project Setup**
+- ✅ **Phase 2: User Authentication & Authorization**
+- ✅ **Phase 3: Task Management**
+- ⬜ **Phase 4: Team Collaboration**
+- ⬜ **Phase 5: Real-time Notifications & AI Integration**
+- ⬜ **Phase 6: Advanced Search & Analytics**
+- ⬜ **Phase 7: Performance & Reliability**
+- ⬜ **Phase 8: DevOps & Cloud Deployment**
+- ⬜ **Phase 9: Extended Platform Capabilities**
 
-For detailed roadmap items, see [docs/ROADMAP.md](./docs/ROADMAP.md).
+For detailed milestone breakdowns, see [docs/ROADMAP.md](./docs/ROADMAP.md).
 
 ---
 

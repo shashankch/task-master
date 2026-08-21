@@ -21,7 +21,7 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Redis sliding window rate limiting on auth endpoints
   - Baseline GitHub Actions CI/CD automated workflow
 
-- ⬜ **Phase 3: Task Management**
+- ✅ **Phase 3: Task Management**
   - Full CRUD operations with soft deletion and optimistic locking
   - Status state transitions (`OPEN` → `IN_PROGRESS` → `REVIEW` → `COMPLETED` → `ARCHIVED`)
   - Multi-dimensional JPA criteria filtering, multi-field sorting, and cursor pagination

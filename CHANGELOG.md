@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-08-21
+
+### Added
+- Task management domain aggregate, state machine (`OPEN`, `IN_PROGRESS`, `REVIEW`, `COMPLETED`, `ARCHIVED`), and priority levels (`LOW`, `MEDIUM`, `HIGH`, `URGENT`).
+- Task CRUD REST endpoints (`/api/v1/tasks`, `/api/v1/tasks/{id}`).
+- Task status transitions with state machine validation (`/api/v1/tasks/{id}/status`).
+- Task assignment and unassignment (`/api/v1/tasks/{id}/assign`).
+- Dynamic search and multi-field filtering (`status`, `priority`, `assigneeId`, `creatorId`, `teamId`, `label`, date ranges, and keyword search).
+- PostgreSQL full-text search `tsvector` generated column and GIN index (`V4__create_tasks_table.sql`).
+- Task labels collection support (`V5__create_task_labels_table.sql`).
+- Optimistic locking via JPA `@Version` on Task aggregate.
+- Soft deletion support with `deleted_at` timestamp filtering.
+- Domain event publishing for task lifecycle (`TaskCreatedEvent`, `TaskUpdatedEvent`, `TaskStatusChangedEvent`, `TaskAssignedEvent`, `TaskDeletedEvent`).
+- Complete test coverage across domain model, service layer, MockMvc controllers, and end-to-end integration flows.
+
+---
+
 ## [0.2.0] - 2026-08-20
 
 ### Added
