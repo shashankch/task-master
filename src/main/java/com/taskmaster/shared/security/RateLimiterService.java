@@ -1,7 +1,9 @@
 package com.taskmaster.shared.security;
 
 import com.taskmaster.shared.exception.RateLimitExceededException;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
@@ -60,9 +62,9 @@ public class RateLimiterService {
                     throw new RateLimitExceededException("Too many requests. Please try again later.", windowSeconds);
                 }
 
-                String member = now + ":" + java.util.UUID.randomUUID();
+                String member = now + ":" + UUID.randomUUID();
                 redisTemplate.opsForZSet().add(redisKey, member, now);
-                redisTemplate.expire(redisKey, java.time.Duration.ofSeconds(windowSeconds * 2L));
+                redisTemplate.expire(redisKey, Duration.ofSeconds(windowSeconds * 2L));
                 return;
             } catch (RateLimitExceededException e) {
                 throw e;
