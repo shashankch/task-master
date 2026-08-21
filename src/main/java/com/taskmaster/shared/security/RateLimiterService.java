@@ -73,7 +73,8 @@ public class RateLimiterService {
 
         // In-memory sliding window implementation
         ConcurrentLinkedQueue<Long> timestamps = inMemoryBuckets.computeIfAbsent(key, k -> new ConcurrentLinkedQueue<>());
-        while (!timestamps.isEmpty() && timestamps.peek() < windowStart) {
+        Long timestamp;
+        while ((timestamp = timestamps.peek()) != null && timestamp < windowStart) {
             timestamps.poll();
         }
 
