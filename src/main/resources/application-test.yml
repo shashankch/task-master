@@ -25,5 +25,5 @@ logging:
 
 app:
   rate-limiting:
-    enabled: true
+    enabled: false
     auth-requests-per-minute: 1000
