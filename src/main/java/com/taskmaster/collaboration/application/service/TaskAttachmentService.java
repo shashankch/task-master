@@ -84,7 +84,7 @@ public class TaskAttachmentService {
         try {
             fileStorageService.uploadFile(storageKey, file.getBytes(), contentType);
         } catch (IOException e) {
-            throw new BadRequestException("Failed to read file content: " + e.getMessage());
+            throw new BadRequestException("Failed to read file content");
         }
 
         TaskAttachment attachment = new TaskAttachment(
