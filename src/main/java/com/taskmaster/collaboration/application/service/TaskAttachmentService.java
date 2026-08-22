@@ -77,7 +77,10 @@ public class TaskAttachmentService {
         User uploader = userRepository.findById(uploaderId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", uploaderId));
 
-        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "attachment";
+        String rawFilename = file.getOriginalFilename();
+        String originalFilename = (rawFilename != null && !rawFilename.isBlank())
+            ? java.nio.file.Paths.get(rawFilename).getFileName().toString()
+            : "attachment";
         String contentType = file.getContentType() != null ? file.getContentType() : "application/octet-stream";
         String storageKey = String.format("tasks/%s/%s-%s", taskId, UUID.randomUUID(), originalFilename);
 
