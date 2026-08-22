@@ -108,6 +108,11 @@ public class TaskCommentService {
         TaskComment comment = taskCommentRepository.findById(commentId)
             .orElseThrow(() -> new ResourceNotFoundException("TaskComment", "id", commentId));
 
+        Task task = comment.getTask();
+        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
+            throw new ForbiddenException("You are not a member of the team this task belongs to");
+        }
+
         if (comment.isDeleted()) {
             throw new BadRequestException("Cannot edit a deleted comment");
         }
