@@ -90,6 +90,9 @@ TaskMaster exposes a versioned, RESTful API secured by asymmetric RS256 JWTs wit
 | **Authentication** | `/api/v1/auth` | User registration, login, refresh token rotation, logout, and public JWKS keys | No (Rate Limited) |
 | **User Profile** | `/api/v1/users` | Profile retrieval and display name/avatar updates | Yes (Bearer JWT) |
 | **Task Management** | `/api/v1/tasks` | CRUD, lifecycle state transitions, assignee assignment, JPA criteria filtering, full-text search, and soft deletion | Yes (Bearer JWT) |
+| **Team Workspaces** | `/api/v1/teams` | Workspace creation, member governance, secure invite code generation/joining, and role management | Yes (Bearer JWT) |
+| **Task Comments** | `/api/v1/tasks/{taskId}/comments` | Hierarchical threaded task comments, nested replies, editing, and soft deletion | Yes (Bearer JWT) |
+| **Task Attachments** | `/api/v1/tasks/{taskId}/attachments` | Multipart file upload (Max 10MB), S3/MinIO storage, pre-signed download URLs, and deletion | Yes (Bearer JWT) |
 
 ---
 
@@ -114,12 +117,13 @@ Track implementation progress across release phases:
 - ✅ **Phase 1: Foundation & Project Setup**
 - ✅ **Phase 2: User Authentication & Authorization**
 - ✅ **Phase 3: Task Management**
-- ⬜ **Phase 4: Team Collaboration**
+- ✅ **Phase 4: Team Collaboration**
 - ⬜ **Phase 5: Real-time Notifications & AI Integration**
 - ⬜ **Phase 6: Advanced Search & Analytics**
 - ⬜ **Phase 7: Performance & Reliability**
 - ⬜ **Phase 8: DevOps & Cloud Deployment**
 - ⬜ **Phase 9: Extended Platform Capabilities**
+- ⬜ **Phase 10: Modern Collaborative Web Application (Frontend)**
 
 For detailed milestone breakdowns, see [docs/ROADMAP.md](./docs/ROADMAP.md).
 
