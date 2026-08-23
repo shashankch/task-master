@@ -16,6 +16,7 @@ import com.taskmaster.collaboration.application.dto.CommentResponse;
 import com.taskmaster.collaboration.application.dto.CreateCommentRequest;
 import com.taskmaster.collaboration.application.dto.UpdateCommentRequest;
 import com.taskmaster.collaboration.application.service.TaskCommentService;
+import com.taskmaster.shared.config.JacksonConfig;
 import com.taskmaster.shared.config.SecurityConfig;
 import com.taskmaster.shared.exception.GlobalExceptionHandler;
 import com.taskmaster.shared.security.JwtConfig;
@@ -28,7 +29,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,7 +37,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TaskCommentController.class)
-@Import({SecurityConfig.class, JwtConfig.class, GlobalExceptionHandler.class})
+@Import({SecurityConfig.class, JwtConfig.class, GlobalExceptionHandler.class, JacksonConfig.class})
 @ActiveProfiles("test")
 class TaskCommentControllerTest {
 

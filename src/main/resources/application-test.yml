@@ -27,3 +27,6 @@ app:
   rate-limiting:
     enabled: false
     auth-requests-per-minute: 1000
+  ai:
+    enabled: true
+    fallback-enabled: true
