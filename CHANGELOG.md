@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-08-22
+
+### Added
+- Team workspace management module with workspace creation, invite code generation, invite-based joining, and role governance (`OWNER`, `ADMIN`, `MEMBER`).
+- Team REST endpoints (`/api/v1/teams`, `/api/v1/teams/{id}`, `/api/v1/teams/join`, `/api/v1/teams/{id}/invite-code/regenerate`, `/api/v1/teams/{id}/members`, `/api/v1/teams/{id}/members/{userId}/role`).
+- Threaded hierarchical task comments with recursive replies, author editing, and soft deletion (`/api/v1/tasks/{taskId}/comments`, `/api/v1/comments/{id}`).
+- Task file attachments module supporting multipart uploads (up to 10MB), S3/MinIO compatible storage, and pre-signed download URLs (`/api/v1/tasks/{taskId}/attachments`, `/api/v1/attachments/{id}`).
+- Database migrations:
+  - `V6__create_teams_table.sql`: `teams` workspace table with unique invite codes and owner constraints.
+  - `V7__create_team_members_table.sql`: `team_members` membership table with role check constraints.
+  - `V8__add_team_fk_to_tasks.sql`: Foreign key constraint linking tasks to team workspaces.
+  - `V9__create_task_comments_table.sql`: `task_comments` table with hierarchical parent-child relationships and soft deletion.
+  - `V10__create_task_attachments_table.sql`: `task_attachments` table tracking file metadata and object storage keys.
+- Domain event publishing for team and collaboration lifecycles (`TeamCreatedEvent`, `TeamMemberJoinedEvent`, `TeamMemberRoleUpdatedEvent`, `TeamMemberRemovedEvent`, `TeamDeletedEvent`, `TaskCommentCreatedEvent`, `TaskCommentUpdatedEvent`, `TaskCommentDeletedEvent`, `TaskAttachmentUploadedEvent`, `TaskAttachmentDeletedEvent`).
+- Comprehensive unit, MockMvc, and end-to-end integration test suites across team workspaces and collaboration flows (73 total tests passing).
+- Production-grade REST API specification document in `docs/api-specification.md`.
+
+---
+
 ## [0.3.0] - 2026-08-21
 
 ### Added

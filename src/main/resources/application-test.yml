@@ -22,3 +22,8 @@ logging:
   level:
     root: WARN
     com.taskmaster: INFO
+
+app:
+  rate-limiting:
+    enabled: false
+    auth-requests-per-minute: 1000

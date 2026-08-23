@@ -28,7 +28,7 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - PostgreSQL full-text search (`tsvector` & GIN index)
   - Domain event publishing for lifecycle triggers
 
-- ⬜ **Phase 4: Team Collaboration**
+- ✅ **Phase 4: Team Collaboration**
   - Team & project workspace creation with role-based member governance
   - Secure invite code generation and onboarding workflow
   - Team-scoped task querying and authorization gates
@@ -70,9 +70,20 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Kanban board drag-and-drop positional reordering
   - Webhooks dispatching system for external automation
 
+- ⬜ **Phase 10: Modern Collaborative Web Application (Frontend)**
+  - Next.js (App Router) & React 19 single-page progressive web application
+  - Responsive, accessible UI system using Tailwind CSS, Radix UI primitives, and Lucide icons
+  - Interactive Kanban board with drag-and-drop state transitions (`@dnd-kit`)
+  - Real-time notification center and live task update subscriptions via WebSocket/STOMP
+  - Rich Markdown task editor with live preview and syntax highlighting
+  - Multi-workspace switcher, invite code modals, and team member management dashboard
+  - Embedded AI assistant panel for natural language task drafting and comment summarization
+  - Client state & server synchronization via TanStack Query and Zustand
+
 ---
 
 ### Legend
 - ✅ Complete
 - 🔄 In Progress
 - ⬜ Planned
+

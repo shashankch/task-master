@@ -333,6 +333,174 @@ All non-2xx responses adhere to the **RFC 7807 `ProblemDetail`** standard:
   "data": {
     "message": "Task successfully deleted"
   },
-  "timestamp": "2026-08-21T10:00:00Z"
+  "timestamp": "2026-08-22T10:00:00Z"
 }
 ```
+
+---
+
+### 4. Team Workspace Governance (`/api/v1/teams`)
+
+#### 4.1 Create Team Workspace
+- **Method**: `POST /api/v1/teams`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "name": "Platform Engineering",
+  "description": "Core infrastructure, foundations, and developer tooling"
+}
+```
+- **Response**: `201 Created`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "e5f6a7b8-9012-cdef-3456-789012345678",
+    "name": "Platform Engineering",
+    "description": "Core infrastructure, foundations, and developer tooling",
+    "owner": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "username": "alexdev",
+      "displayName": "Alex Developer"
+    },
+    "inviteCode": "K8X9MZ2P4W",
+    "memberCount": 1,
+    "createdAt": "2026-08-22T10:00:00Z",
+    "updatedAt": "2026-08-22T10:00:00Z"
+  },
+  "timestamp": "2026-08-22T10:00:00Z"
+}
+```
+
+#### 4.2 Get Team Details & Members
+- **Method**: `GET /api/v1/teams/{id}`
+- **Auth**: `Bearer <token>` (Team member only)
+- **Response**: `200 OK` (`TeamDetailResponse`)
+
+#### 4.3 List My Team Workspaces
+- **Method**: `GET /api/v1/teams`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK` (`List<TeamResponse>`)
+
+#### 4.4 Join Team with Invite Code
+- **Method**: `POST /api/v1/teams/join`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "inviteCode": "K8X9MZ2P4W"
+}
+```
+- **Response**: `200 OK` (`TeamResponse`)
+
+#### 4.5 Regenerate Team Invite Code
+- **Method**: `POST /api/v1/teams/{id}/invite-code/regenerate`
+- **Auth**: `Bearer <token>` (`OWNER` or `ADMIN` only)
+- **Response**: `200 OK` (`TeamResponse`)
+
+#### 4.6 List Team Members
+- **Method**: `GET /api/v1/teams/{id}/members`
+- **Auth**: `Bearer <token>` (Team member only)
+- **Response**: `200 OK` (`List<TeamMemberResponse>`)
+
+#### 4.7 Update Member Role
+- **Method**: `PATCH /api/v1/teams/{id}/members/{userId}/role`
+- **Auth**: `Bearer <token>` (`OWNER` only)
+- **Request Body**:
+```json
+{
+  "role": "ADMIN"
+}
+```
+- **Response**: `200 OK` (`TeamMemberResponse`)
+
+#### 4.8 Remove Member / Leave Team
+- **Method**: `DELETE /api/v1/teams/{id}/members/{userId}`
+- **Auth**: `Bearer <token>` (`OWNER`, `ADMIN`, or self-leave)
+- **Response**: `200 OK`
+
+#### 4.9 Delete Team Workspace
+- **Method**: `DELETE /api/v1/teams/{id}`
+- **Auth**: `Bearer <token>` (`OWNER` only)
+- **Response**: `200 OK`
+
+---
+
+### 5. Threaded Comments & Discussions
+
+#### 5.1 Post Comment or Reply to Task
+- **Method**: `POST /api/v1/tasks/{taskId}/comments`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "content": "RFC architecture review passed. Ready for deployment.",
+  "parentCommentId": "d4e5f6a7-b890-12cd-ef34-567890123456"
+}
+```
+*(Leave `parentCommentId: null` for root-level discussion threads)*
+- **Response**: `201 Created` (`CommentResponse`)
+
+#### 5.2 Get Threaded Comments
+- **Method**: `GET /api/v1/tasks/{taskId}/comments`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK` (`List<CommentResponse>` with nested `replies` tree)
+
+#### 5.3 Edit Comment
+- **Method**: `PUT /api/v1/comments/{id}`
+- **Auth**: `Bearer <token>` (Author only)
+- **Request Body**:
+```json
+{
+  "content": "Updated comment content"
+}
+```
+- **Response**: `200 OK` (`CommentResponse`)
+
+#### 5.4 Soft Delete Comment
+- **Method**: `DELETE /api/v1/comments/{id}`
+- **Auth**: `Bearer <token>` (Author only)
+- **Response**: `200 OK`
+
+---
+
+### 6. Task Attachments & Object Storage
+
+#### 6.1 Upload File Attachment
+- **Method**: `POST /api/v1/tasks/{taskId}/attachments`
+- **Content-Type**: `multipart/form-data`
+- **Auth**: `Bearer <token>`
+- **Form Data**: `file` (Multipart file, max 10MB)
+- **Response**: `201 Created`
+```json
+{
+  "success": true,
+  "data": {
+    "id": "f6a7b890-12cd-ef34-5678-901234567890",
+    "taskId": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+    "uploader": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "username": "alexdev",
+      "displayName": "Alex Developer"
+    },
+    "fileName": "system-architecture.pdf",
+    "fileSize": 245890,
+    "contentType": "application/pdf",
+    "downloadUrl": "http://localhost:9000/taskmaster-attachments/tasks/c3d4e5f6-a7b8-9012-cdef-345678901234/uuid-system-architecture.pdf?response-content-disposition=attachment;filename=\"system-architecture.pdf\"",
+    "createdAt": "2026-08-22T10:00:00Z"
+  },
+  "timestamp": "2026-08-22T10:00:00Z"
+}
+```
+
+#### 6.2 List Task Attachments
+- **Method**: `GET /api/v1/tasks/{taskId}/attachments`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK` (`List<AttachmentResponse>` with generated pre-signed URLs)
+
+#### 6.3 Delete Attachment
+- **Method**: `DELETE /api/v1/attachments/{id}`
+- **Auth**: `Bearer <token>` (Uploader only)
+- **Response**: `200 OK`
+
