@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-08-23
+
+### Added
+- Real-time notification system with WebSocket and STOMP message broker (`/ws`), JWT channel handshake authentication, and private user destination queues (`/user/queue/notifications`).
+- Persistent Notification Center REST API:
+  - `GET /api/v1/notifications`: Paginated list of notifications with unread filtering.
+  - `GET /api/v1/notifications/unread-count`: Fast badge counter for unread notifications.
+  - `PATCH /api/v1/notifications/{id}/read`: Mark single notification as read.
+  - `PATCH /api/v1/notifications/read-all`: Bulk mark all notifications as read for authenticated user.
+- Event-driven notification listener translating domain events (`TaskAssignedEvent`, `TaskCommentCreatedEvent`, `TaskStatusChangedEvent`, `TeamMemberJoinedEvent`) into persistent and real-time push alerts.
+- Database migration `V11__create_notifications_table.sql` with partial indexing on unread notifications and foreign keys.
+- Universal OpenAI-Compatible Generative AI Assistant module (`/api/v1/ai`):
+  - Standard `POST /chat/completions` REST client compatible with Groq Cloud (`llama-3.3-70b-versatile`), Google Gemini (OpenAI endpoint), local Ollama (`llama3.2`), and enterprise AI Gateways with resilient context-aware heuristic fallback.
+  - `POST /api/v1/ai/generate-description`: Synthesize comprehensive Markdown task descriptions and checkbox acceptance criteria from brief user prompts.
+  - `POST /api/v1/ai/summarize-task/{taskId}`: Executive summary distilling task metadata and all threaded comments into key takeaways and action items.
+  - `POST /api/v1/ai/suggest-priority`: Intelligent priority recommendation (`LOW`, `MEDIUM`, `HIGH`, `URGENT`) with confidence score and reasoning.
+  - `POST /api/v1/ai/detect-duplicates`: Semantic duplicate task detection across workspace tasks.
+  - `POST /api/v1/ai/suggest-labels`: Smart technical categorization tag suggestions based on task context.
+- Full test coverage for notification lifecycle and AI assistant workflows (total tests increased to 99 passing tests).
+
+---
+
 ## [0.4.0] - 2026-08-22
 
 ### Added

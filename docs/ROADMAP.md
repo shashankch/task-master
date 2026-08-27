@@ -35,8 +35,8 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Threaded hierarchical task comments
   - Multipart file attachments with MinIO/S3 and pre-signed download URLs
 
-- ⬜ **Phase 5: Real-time Notifications & AI Integration**
-  - Event-driven notifications pipeline via Spring Cloud Stream & RabbitMQ
+- ✅ **Phase 5: Real-time Notifications & AI Integration**
+  - Event-driven notifications pipeline via domain event listeners
   - Bidirectional real-time notification push using WebSocket & STOMP with JWT handshake
   - Pluggable Generative AI engine (Google Gemini, Groq, local Ollama)
   - Automated task description synthesis and executive comment summarization

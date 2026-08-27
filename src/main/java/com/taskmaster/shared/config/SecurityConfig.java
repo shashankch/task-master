@@ -21,6 +21,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.taskmaster.shared.constant.SecurityConstants;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -38,14 +40,10 @@ public class SecurityConfig {
             .cors(cors -> {})
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/v1/auth/**",
-                    "/actuator/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**",
-                    "/ws/**"
-                ).permitAll()
+                .requestMatchers(SecurityConstants.PUBLIC_AUTH_ENDPOINTS).permitAll()
+                .requestMatchers(SecurityConstants.PUBLIC_ACTUATOR_ENDPOINTS).permitAll()
+                .requestMatchers(SecurityConstants.PUBLIC_SWAGGER_ENDPOINTS).permitAll()
+                .requestMatchers(SecurityConstants.PUBLIC_WS_ENDPOINTS).permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
@@ -60,10 +58,10 @@ public class SecurityConfig {
 
         Converter<Jwt, Collection<GrantedAuthority>> customAuthoritiesConverter = jwt -> {
             Collection<GrantedAuthority> authorities = defaultAuthoritiesConverter.convert(jwt);
-            List<String> roles = jwt.getClaimAsStringList("roles");
+            List<String> roles = jwt.getClaimAsStringList(SecurityConstants.CLAIM_ROLES);
             if (roles != null) {
                 List<SimpleGrantedAuthority> roleAuthorities = roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                    .map(role -> new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role.toUpperCase()))
                     .collect(Collectors.toList());
                 if (authorities != null) {
                     roleAuthorities.addAll(authorities.stream()

@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
     checkstyle
 }
@@ -20,7 +20,7 @@ repositories {
 }
 
 val springCloudVersion = "2024.0.0"
-val springAiVersion = "1.0.0-M6"
+val springAiVersion = "2.0.1"
 val mapstructVersion = "1.6.3"
 val springdocVersion = "2.8.5"
 val archunitVersion = "1.4.1"
@@ -42,7 +42,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // AWS S3 / MinIO
-    implementation("software.amazon.awssdk:s3:2.30.36")
+    implementation("software.amazon.awssdk:s3:2.54.0")
 
     // MapStruct
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
@@ -53,6 +53,7 @@ dependencies {
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
@@ -62,9 +63,12 @@ dependencies {
     testRuntimeOnly("com.h2database:h2")
 }
 
+val testcontainersVersion = "1.20.5"
+
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+        mavenBom("org.testcontainers:testcontainers-bom:$testcontainersVersion")
     }
 }
 

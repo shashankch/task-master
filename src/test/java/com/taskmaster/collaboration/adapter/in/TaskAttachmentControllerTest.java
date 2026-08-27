@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.taskmaster.collaboration.application.dto.AttachmentResponse;
 import com.taskmaster.collaboration.application.service.TaskAttachmentService;
+import com.taskmaster.shared.config.JacksonConfig;
 import com.taskmaster.shared.config.SecurityConfig;
 import com.taskmaster.shared.exception.GlobalExceptionHandler;
 import com.taskmaster.shared.security.JwtConfig;
@@ -24,7 +25,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,7 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
 @WebMvcTest(TaskAttachmentController.class)
-@Import({SecurityConfig.class, JwtConfig.class, GlobalExceptionHandler.class})
+@Import({SecurityConfig.class, JwtConfig.class, GlobalExceptionHandler.class, JacksonConfig.class})
 @ActiveProfiles("test")
 class TaskAttachmentControllerTest {
 

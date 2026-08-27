@@ -504,3 +504,202 @@ All non-2xx responses adhere to the **RFC 7807 `ProblemDetail`** standard:
 - **Auth**: `Bearer <token>` (Uploader only)
 - **Response**: `200 OK`
 
+---
+
+### 7. Real-Time Notifications & WebSocket
+
+#### 7.1 WebSocket & STOMP Connection
+- **Endpoint**: `/ws` (supports native WebSocket and SockJS fallback)
+- **Handshake Authentication**: Send STOMP header `Authorization: Bearer <access_token>` or query param `token=<access_token>`
+- **User Destination Subscriptions**:
+  - `/user/queue/notifications`: Real-time private notification alerts
+- **Topic Subscriptions**:
+  - `/topic/teams/{teamId}/tasks`: Workspace-wide broadcast updates
+
+#### 7.2 Get Notifications
+- **Method**: `GET /api/v1/notifications`
+- **Auth**: `Bearer <token>`
+- **Query Params**:
+  - `unreadOnly` (boolean, optional)
+  - `page` (int, default `0`), `size` (int, default `20`), `sort` (default `createdAt,desc`)
+- **Response**: `200 OK` (`PageResponse<NotificationResponse>`)
+```json
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "id": "789012cd-ef34-5678-9012-345678901234",
+        "recipientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "type": "TASK_ASSIGNED",
+        "title": "Task Assigned",
+        "message": "You have been assigned to task: Implement Notification Hub",
+        "metadata": "{\"taskId\":\"c3d4e5f6-a7b8-9012-cdef-345678901234\"}",
+        "isRead": false,
+        "createdAt": "2026-08-23T10:00:00Z",
+        "readAt": null
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true,
+    "hasNext": false,
+    "hasPrevious": false
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 7.3 Get Unread Notification Count
+- **Method**: `GET /api/v1/notifications/unread-count`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "unreadCount": 1
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 7.4 Mark Single Notification Read
+- **Method**: `PATCH /api/v1/notifications/{id}/read`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK` (`NotificationResponse` with `isRead: true` and populated `readAt`)
+
+#### 7.5 Mark All Notifications Read
+- **Method**: `PATCH /api/v1/notifications/read-all`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK`
+
+---
+
+### 8. Universal AI Assistant (`/api/v1/ai`)
+
+#### 8.1 Generate Task Description & Acceptance Criteria
+- **Method**: `POST /api/v1/ai/generate-description`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "title": "Implement Redis Cache Invalidation",
+  "prompt": "We need cache invalidation hooks triggered on task update events to avoid stale task details in search."
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "description": "### Objective\nImplement event-driven cache invalidation...\n\n### Acceptance Criteria\n- [ ] Invalidation triggered on status change\n- [ ] Cache hit ratio exceeds 90%",
+    "suggestedAcceptanceCriteria": [
+      "Invalidation triggered on status change",
+      "Cache hit ratio exceeds 90%"
+    ]
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 8.2 Executive Task Summarization
+- **Method**: `POST /api/v1/ai/summarize-task/{taskId}`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "taskId": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+    "summary": "### Executive Summary\n- Core objective: Streamline platform operations and ensure robust delivery.",
+    "keyTakeaways": [
+      "Task is progressing according to technical specification",
+      "Discussions align on architectural approach"
+    ],
+    "actionItems": [
+      "Finalize code changes and complete test verification",
+      "Perform documentation audit"
+    ]
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 8.3 Recommend Priority Level
+- **Method**: `POST /api/v1/ai/suggest-priority`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "title": "Critical Security Vulnerability in OAuth Token Flow",
+  "description": "Token rotation replay check fails under specific concurrency race conditions."
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "suggestedPriority": "URGENT",
+    "confidence": 0.95,
+    "reasoning": "Detected critical terms indicating downtime or security impact."
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 8.4 Detect Duplicate Tasks
+- **Method**: `POST /api/v1/ai/detect-duplicates`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "title": "Refactor token rotation service",
+  "description": "Clean up JWT token hashing helper functions",
+  "teamId": null
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "duplicates": [
+      {
+        "taskId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "title": "Refactor Auth Engine",
+        "similarityScore": 0.85,
+        "reason": "Semantic title and keyword overlap detected"
+      }
+    ]
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+#### 8.5 Suggest Categorization Labels
+- **Method**: `POST /api/v1/ai/suggest-labels`
+- **Auth**: `Bearer <token>`
+- **Request Body**:
+```json
+{
+  "title": "Database connection pool tuning",
+  "description": "Configure HikariCP maximumPoolSize and leakDetectionThreshold"
+}
+```
+- **Response**: `200 OK`
+```json
+{
+  "success": true,
+  "data": {
+    "suggestedLabels": ["backend", "database", "performance", "tuning"]
+  },
+  "timestamp": "2026-08-23T10:00:00Z"
+}
+```
+
+
