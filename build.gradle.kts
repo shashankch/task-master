@@ -38,6 +38,7 @@ dependencies {
 
     // Database & Migrations
     runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 
@@ -50,6 +51,14 @@ dependencies {
 
     // OpenAPI & Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+
+    // OpenTelemetry & Observability
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    // In-memory Cache & Rate Limiting Fallback
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -81,7 +90,7 @@ checkstyle {
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-    options.release.set(21)
+    options.release.set(25)
     options.compilerArgs.addAll(listOf("-parameters"))
 }
 

@@ -1,0 +1,1799 @@
+openapi: 3.1.0
+info:
+  title: TaskMaster API
+  description: Production-grade Collaborative Task Tracking System RESTful API documentation
+  contact:
+    name: TaskMaster Engineering Team
+    url: https://github.com/taskmaster
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 0.1.0
+servers:
+- url: http://localhost
+  description: Generated server url
+security:
+- BearerAuth: []
+tags:
+- name: Authentication
+  description: "User registration, authentication, token rotation, and logout endpoints"
+- name: Users
+  description: User profile and account management endpoints
+- name: Notifications
+  description: Real-time notifications and notification center endpoints
+- name: AI Assistant
+  description: Pluggable Generative AI capabilities for task synthesis and summarization
+- name: Comments
+  description: Hierarchical threaded task comments and discussion endpoints
+- name: Tasks
+  description: "Task CRUD, status transitions, assignment, searching, and filtering\
+    \ endpoints"
+- name: Teams
+  description: "Team workspace creation, membership governance, invite codes, and\
+    \ role management"
+- name: Attachments
+  description: Task file attachments and S3/MinIO upload/download endpoints
+paths:
+  /api/v1/users/me:
+    get:
+      tags:
+      - Users
+      summary: Get current authenticated user profile
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseUserResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Users
+      summary: Update current user profile information
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseUserResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/teams/{id}:
+    get:
+      tags:
+      - Teams
+      summary: Get team workspace details by ID
+      operationId: getTeamById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamDetailResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Teams
+      summary: Update team workspace name or description (OWNER/ADMIN only)
+      operationId: updateTeam
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTeamRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Teams
+      summary: Delete team workspace (OWNER only)
+      operationId: deleteTeam
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks/{id}:
+    get:
+      tags:
+      - Tasks
+      summary: Get task by ID
+      operationId: getTaskById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskResponse"
+      security:
+      - BearerAuth: []
+    put:
+      tags:
+      - Tasks
+      summary: Update task details
+      operationId: updateTask
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Tasks
+      summary: Soft delete a task
+      operationId: deleteTask
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+  /api/v1/comments/{id}:
+    put:
+      tags:
+      - Comments
+      summary: Edit comment content (Author only)
+      operationId: updateComment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCommentResponse"
+      security:
+      - BearerAuth: []
+    delete:
+      tags:
+      - Comments
+      summary: Soft delete a comment (Author only)
+      operationId: deleteComment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+  /api/v1/teams:
+    get:
+      tags:
+      - Teams
+      summary: List all team workspaces the current user belongs to
+      operationId: getUserTeams
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListTeamResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Teams
+      summary: Create a new team workspace
+      operationId: createTeam
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTeamRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/teams/{id}/invite-code/regenerate:
+    post:
+      tags:
+      - Teams
+      summary: Regenerate team invite code (OWNER/ADMIN only)
+      operationId: regenerateInviteCode
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/teams/join:
+    post:
+      tags:
+      - Teams
+      summary: Join a team workspace using an invite code
+      operationId: joinTeam
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinTeamRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks:
+    get:
+      tags:
+      - Tasks
+      summary: Search and filter tasks with multi-field sorting and pagination
+      operationId: searchTasks
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - OPEN
+          - IN_PROGRESS
+          - REVIEW
+          - COMPLETED
+          - ARCHIVED
+      - name: priority
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - URGENT
+      - name: assigneeId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: creatorId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: teamId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: dueDateFrom
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: dueDateTo
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: label
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePageResponseTaskResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Tasks
+      summary: Create a new task
+      operationId: createTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks/{taskId}/comments:
+    get:
+      tags:
+      - Comments
+      summary: Get all hierarchical threaded comments for a task
+      operationId: getTaskComments
+      parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListCommentResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Comments
+      summary: Post a comment or reply to a task
+      operationId: createComment
+      parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCommentResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks/{taskId}/attachments:
+    get:
+      tags:
+      - Attachments
+      summary: List all file attachments for a task with pre-signed download URLs
+      operationId: getTaskAttachments
+      parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListAttachmentResponse"
+      security:
+      - BearerAuth: []
+    post:
+      tags:
+      - Attachments
+      summary: Upload a file attachment to a task (Max 10MB)
+      operationId: uploadAttachment
+      parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAttachmentResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/auth/register:
+    post:
+      tags:
+      - Authentication
+      summary: Register a new user account
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseUserResponse"
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - Authentication
+      summary: Rotate refresh token and issue a new JWT access token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAuthResponse"
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - Authentication
+      summary: Revoke user refresh token session
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Authenticate user and issue JWT access and refresh tokens
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseAuthResponse"
+  /api/v1/ai/summarize-task/{taskId}:
+    post:
+      tags:
+      - AI Assistant
+      summary: Summarize task description and threaded comments into executive bullet
+        points
+      operationId: summarizeTask
+      parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseSummarizeTaskResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/ai/suggest-priority:
+    post:
+      tags:
+      - AI Assistant
+      summary: Analyze task context and recommend priority level with reasoning
+      operationId: suggestPriority
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestPriorityRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePriorityRecommendationResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/ai/suggest-labels:
+    post:
+      tags:
+      - AI Assistant
+      summary: Suggest categorization tags and labels based on task content
+      operationId: suggestLabels
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SuggestLabelsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseSuggestLabelsResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/ai/generate-description:
+    post:
+      tags:
+      - AI Assistant
+      summary: Synthesize detailed task description and acceptance criteria from prompt
+      operationId: generateDescription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateDescriptionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseGeneratedDescriptionResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/ai/detect-duplicates:
+    post:
+      tags:
+      - AI Assistant
+      summary: Detect duplicate or semantically overlapping tasks in workspace
+      operationId: detectDuplicates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DetectDuplicatesRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseDetectDuplicatesResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/teams/{id}/members/{userId}/role:
+    patch:
+      tags:
+      - Teams
+      summary: Update member role in team workspace (OWNER only)
+      operationId: updateMemberRole
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemberRoleRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTeamMemberResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks/{id}/status:
+    patch:
+      tags:
+      - Tasks
+      summary: Transition task lifecycle status
+      operationId: updateTaskStatus
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskStatusRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/tasks/{id}/assign:
+    patch:
+      tags:
+      - Tasks
+      summary: Assign or unassign task
+      operationId: assignTask
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignTaskRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseTaskResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/notifications/{id}/read:
+    patch:
+      tags:
+      - Notifications
+      summary: Mark a single notification as read
+      operationId: markAsRead
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseNotificationResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/notifications/read-all:
+    patch:
+      tags:
+      - Notifications
+      summary: Mark all notifications as read for current user
+      operationId: markAllAsRead
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+  /api/v1/teams/{id}/members:
+    get:
+      tags:
+      - Teams
+      summary: List all members of a team workspace
+      operationId: getTeamMembers
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListTeamMemberResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/notifications:
+    get:
+      tags:
+      - Notifications
+      summary: "Get current user's notifications (paginated, filterable by unread)"
+      operationId: getUserNotifications
+      parameters:
+      - name: unreadOnly
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePageResponseNotificationResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/notifications/unread-count:
+    get:
+      tags:
+      - Notifications
+      summary: Get count of unread notifications for badge counter
+      operationId: getUnreadCount
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseUnreadCountResponse"
+      security:
+      - BearerAuth: []
+  /api/v1/auth/.well-known/jwks.json:
+    get:
+      tags:
+      - Authentication
+      summary: JSON Web Key Set (JWKS) public verification keys
+      operationId: getJwks
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+  /api/v1/teams/{id}/members/{userId}:
+    delete:
+      tags:
+      - Teams
+      summary: Remove a member from team workspace or leave team
+      operationId: removeMember
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+  /api/v1/attachments/{id}:
+    delete:
+      tags:
+      - Attachments
+      summary: Delete a file attachment (Uploader only)
+      operationId: deleteAttachment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMapStringString"
+      security:
+      - BearerAuth: []
+components:
+  schemas:
+    UpdateProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        avatarUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+    ApiResponseUserResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/UserResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+        role:
+          type: string
+          enum:
+          - USER
+          - ADMIN
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+        description:
+          type: string
+    ApiResponseTeamResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/TeamResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          $ref: "#/components/schemas/UserResponse"
+        inviteCode:
+          type: string
+        memberCount:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 1
+        description:
+          type: string
+        priority:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - URGENT
+        dueDate:
+          type: string
+          format: date-time
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+            minLength: 0
+          uniqueItems: true
+    ApiResponseTaskResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/TaskResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    TaskResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+          - OPEN
+          - IN_PROGRESS
+          - REVIEW
+          - COMPLETED
+          - ARCHIVED
+        priority:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - URGENT
+        dueDate:
+          type: string
+          format: date-time
+        creator:
+          $ref: "#/components/schemas/UserResponse"
+        assignee:
+          $ref: "#/components/schemas/UserResponse"
+        teamId:
+          type: string
+          format: uuid
+        labels:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        version:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+      - content
+    ApiResponseCommentResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CommentResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    CommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        author:
+          $ref: "#/components/schemas/UserResponse"
+        parentCommentId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        deleted:
+          type: boolean
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommentResponse"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        description:
+          type: string
+      required:
+      - name
+    JoinTeamRequest:
+      type: object
+      properties:
+        inviteCode:
+          type: string
+      required:
+      - inviteCode
+    CreateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 0
+        description:
+          type: string
+        priority:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - URGENT
+        dueDate:
+          type: string
+          format: date-time
+        assigneeId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+            minLength: 0
+          uniqueItems: true
+      required:
+      - title
+    CreateCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        parentCommentId:
+          type: string
+          format: uuid
+      required:
+      - content
+    ApiResponseAttachmentResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/AttachmentResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    AttachmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        uploader:
+          $ref: "#/components/schemas/UserResponse"
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+          format: int64
+        contentType:
+          type: string
+        downloadUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+          maxLength: 50
+          minLength: 3
+          pattern: "^[a-zA-Z0-9_.-]+$"
+        password:
+          type: string
+          maxLength: 100
+          minLength: 8
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$"
+        displayName:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - email
+      - password
+      - username
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+      - refreshToken
+    ApiResponseAuthResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/AuthResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+        tokenType:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserResponse"
+    ApiResponseMapStringString:
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties:
+            type: string
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    LoginRequest:
+      type: object
+      properties:
+        identifier:
+          type: string
+        password:
+          type: string
+      required:
+      - identifier
+      - password
+    ApiResponseSummarizeTaskResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/SummarizeTaskResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    SummarizeTaskResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+          format: uuid
+        summary:
+          type: string
+        keyTakeaways:
+          type: array
+          items:
+            type: string
+        actionItems:
+          type: array
+          items:
+            type: string
+    SuggestPriorityRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+      required:
+      - title
+    ApiResponsePriorityRecommendationResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PriorityRecommendationResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    PriorityRecommendationResponse:
+      type: object
+      properties:
+        suggestedPriority:
+          type: string
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - URGENT
+        confidence:
+          type: number
+          format: double
+        reasoning:
+          type: string
+    SuggestLabelsRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+      required:
+      - title
+    ApiResponseSuggestLabelsResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/SuggestLabelsResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    SuggestLabelsResponse:
+      type: object
+      properties:
+        suggestedLabels:
+          type: array
+          items:
+            type: string
+    GenerateDescriptionRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        prompt:
+          type: string
+      required:
+      - prompt
+    ApiResponseGeneratedDescriptionResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/GeneratedDescriptionResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    GeneratedDescriptionResponse:
+      type: object
+      properties:
+        description:
+          type: string
+        suggestedAcceptanceCriteria:
+          type: array
+          items:
+            type: string
+    DetectDuplicatesRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        teamId:
+          type: string
+          format: uuid
+      required:
+      - title
+    ApiResponseDetectDuplicatesResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/DetectDuplicatesResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    DetectDuplicatesResponse:
+      type: object
+      properties:
+        duplicates:
+          type: array
+          items:
+            $ref: "#/components/schemas/DuplicateMatchResponse"
+    DuplicateMatchResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        similarityScore:
+          type: number
+          format: double
+        reason:
+          type: string
+    UpdateMemberRoleRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - MEMBER
+      required:
+      - role
+    ApiResponseTeamMemberResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/TeamMemberResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    TeamMemberResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          $ref: "#/components/schemas/UserResponse"
+        role:
+          type: string
+          enum:
+          - OWNER
+          - ADMIN
+          - MEMBER
+        joinedAt:
+          type: string
+          format: date-time
+    UpdateTaskStatusRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - OPEN
+          - IN_PROGRESS
+          - REVIEW
+          - COMPLETED
+          - ARCHIVED
+      required:
+      - status
+    AssignTaskRequest:
+      type: object
+      properties:
+        assigneeId:
+          type: string
+          format: uuid
+    ApiResponseNotificationResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/NotificationResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+          - TASK_ASSIGNED
+          - COMMENT_ADDED
+          - TEAM_INVITE
+          - TASK_UPDATED
+          - MENTION
+        title:
+          type: string
+        message:
+          type: string
+        metadata:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+    ApiResponseListTeamResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    ApiResponseTeamDetailResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/TeamDetailResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    TeamDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        owner:
+          $ref: "#/components/schemas/UserResponse"
+        inviteCode:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMemberResponse"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ApiResponseListTeamMemberResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMemberResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    ApiResponsePageResponseTaskResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PageResponseTaskResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    PageResponseTaskResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        hasNext:
+          type: boolean
+        hasPrevious:
+          type: boolean
+    ApiResponseListCommentResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommentResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    ApiResponseListAttachmentResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    ApiResponsePageResponseNotificationResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PageResponseNotificationResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    PageResponseNotificationResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationResponse"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        first:
+          type: boolean
+        last:
+          type: boolean
+        hasNext:
+          type: boolean
+        hasPrevious:
+          type: boolean
+    ApiResponseUnreadCountResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/UnreadCountResponse"
+        meta:
+          type: object
+          additionalProperties:
+            type: object
+    UnreadCountResponse:
+      type: object
+      properties:
+        unreadCount:
+          type: integer
+          format: int64
+  securitySchemes:
+    BearerAuth:
+      type: http
+      description: "Enter your JWT token in the format: Bearer <token>"
+      name: BearerAuth
+      scheme: bearer
+      bearerFormat: JWT

@@ -61,8 +61,12 @@ public class TaskController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get task by ID")
-    public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(@PathVariable("id") UUID id) {
-        TaskResponse response = taskService.getTaskById(id);
+    public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(
+        @AuthenticationPrincipal Jwt jwt,
+        @PathVariable("id") UUID id
+    ) {
+        UUID currentUserId = jwt != null ? UUID.fromString(jwt.getSubject()) : null;
+        TaskResponse response = taskService.getTaskById(id, currentUserId);
         return ResponseEntity.ok(ApiResponse.of(response));
     }
 

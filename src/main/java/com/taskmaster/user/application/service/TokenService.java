@@ -27,27 +27,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TokenService {
 
-    private static final Duration ACCESS_TOKEN_EXPIRY = Duration.ofMinutes(15);
-    private static final Duration REFRESH_TOKEN_EXPIRY = Duration.ofDays(7);
-
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final String issuer;
+    private final Duration accessTokenExpiry;
+    private final Duration refreshTokenExpiry;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public TokenService(
         JwtEncoder jwtEncoder,
         RefreshTokenRepository refreshTokenRepository,
-        @Value("${app.jwt.issuer:taskmaster-auth-service}") String issuer
+        @Value("${app.jwt.issuer:taskmaster-auth-service}") String issuer,
+        @Value("${app.jwt.access-token-expiration-minutes:15}") int accessTokenExpirationMinutes,
+        @Value("${app.jwt.refresh-token-expiration-days:7}") int refreshTokenExpirationDays
     ) {
         this.jwtEncoder = jwtEncoder;
         this.refreshTokenRepository = refreshTokenRepository;
         this.issuer = issuer;
+        this.accessTokenExpiry = Duration.ofMinutes(accessTokenExpirationMinutes);
+        this.refreshTokenExpiry = Duration.ofDays(refreshTokenExpirationDays);
     }
 
     public String generateAccessToken(User user) {
         Instant now = Instant.now();
-        Instant expiresAt = now.plus(ACCESS_TOKEN_EXPIRY);
+        Instant expiresAt = now.plus(accessTokenExpiry);
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuer(issuer)
@@ -63,7 +66,7 @@ public class TokenService {
     }
 
     public long getAccessTokenExpirationSeconds() {
-        return ACCESS_TOKEN_EXPIRY.toSeconds();
+        return accessTokenExpiry.toSeconds();
     }
 
     @Transactional
@@ -71,7 +74,7 @@ public class TokenService {
         String rawToken = generateSecureRandomToken();
         String familyId = UUID.randomUUID().toString();
         String tokenHash = hashToken(rawToken);
-        Instant expiresAt = Instant.now().plus(REFRESH_TOKEN_EXPIRY);
+        Instant expiresAt = Instant.now().plus(refreshTokenExpiry);
 
         RefreshToken refreshToken = new RefreshToken(tokenHash, userId, familyId, expiresAt);
         refreshTokenRepository.save(refreshToken);
@@ -102,7 +105,7 @@ public class TokenService {
         // Issue new token in same family
         String newRawToken = generateSecureRandomToken();
         String newTokenHash = hashToken(newRawToken);
-        Instant newExpiresAt = Instant.now().plus(REFRESH_TOKEN_EXPIRY);
+        Instant newExpiresAt = Instant.now().plus(refreshTokenExpiry);
 
         RefreshToken newRefreshToken = new RefreshToken(
             newTokenHash,

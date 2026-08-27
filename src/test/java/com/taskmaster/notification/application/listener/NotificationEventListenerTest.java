@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taskmaster.collaboration.domain.event.TaskCommentCreatedEvent;
 import com.taskmaster.notification.application.service.NotificationService;
 import com.taskmaster.notification.domain.model.NotificationType;
@@ -48,7 +49,7 @@ class NotificationEventListenerTest {
 
     @BeforeEach
     void setUp() {
-        listener = new NotificationEventListener(notificationService, taskRepository, teamRepository);
+        listener = new NotificationEventListener(notificationService, taskRepository, teamRepository, new ObjectMapper());
 
         creator = new User("creator@example.com", "creator", "pw", "Creator", Role.USER);
         creator.setId(UUID.randomUUID());

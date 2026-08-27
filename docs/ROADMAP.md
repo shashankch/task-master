@@ -42,35 +42,46 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Automated task description synthesis and executive comment summarization
   - Smart priority recommendations, duplicate task detection, and automatic tagging
 
+- ✅ **Phase 6: Production Hardening, Security Remediation & Open Standards**
+  - Persistent PEM-encoded RSA key pair for zero-session-loss restarts and multi-replica consistency
+  - Environment-driven CORS origin allowlist eliminating wildcard credential exposure
+  - Real AWS SDK v2 S3/MinIO durable file storage adapter with pre-signed URL offloading
+  - Team-scoped authorization checks preventing IDOR vulnerabilities across task operations
+  - Vendor-neutral OpenTelemetry (OTel) distributed tracing via standard OTLP protocol
+  - Validated OpenAPI 3.1 YAML specification (`docs/api/openapi.yaml`) with CI export verification
+  - Bounded Caffeine LRU cache fallback for sliding-window rate limiter
+  - Java 25 compiler bytecode release alignment and expanded ArchUnit regression rule suite
+  - Hibernate `@SQLRestriction` for automatic soft-delete query protection
+
 ---
 
 ## Advanced Horizons
 
-- ⬜ **Phase 6: Advanced Search & Analytics**
+- ⬜ **Phase 7: Advanced Search & Analytics**
   - Dedicated Elasticsearch cluster synchronization
   - Fuzzy typo-tolerant search and type-ahead auto-completion
   - Team velocity, cycle time, and workload distribution analytics
   - Event-sourced audit trail with full historical replay
 
-- ⬜ **Phase 7: Performance & Reliability**
+- ⬜ **Phase 8: Performance & Reliability**
   - Distributed Redis rate limiting with atomic Lua execution
   - Multi-tier caching with declarative invalidation
   - Circuit breaking and fault tolerance via Resilience4j
   - Idempotency key tracking for non-idempotent mutations
 
-- ⬜ **Phase 8: DevOps & Cloud Deployment**
+- ⬜ **Phase 9: DevOps & Cloud Deployment**
   - Multi-stage minimal containerization
   - Production Kubernetes manifests (Deployments, Services, HPA, ConfigMaps)
   - GitHub Actions automated CI/CD pipeline
   - Full observability stack (OpenTelemetry tracing, Prometheus metrics, Grafana dashboards)
 
-- ⬜ **Phase 9: Extended Platform Capabilities**
+- ⬜ **Phase 10: Extended Platform Capabilities**
   - Directed Acyclic Graph (DAG) task dependency engine with cycle detection
   - Recurring scheduled task engine
   - Kanban board drag-and-drop positional reordering
   - Webhooks dispatching system for external automation
 
-- ⬜ **Phase 10: Modern Collaborative Web Application (Frontend)**
+- ⬜ **Phase 11: Modern Collaborative Web Application (Frontend)**
   - Next.js (App Router) & React 19 single-page progressive web application
   - Responsive, accessible UI system using Tailwind CSS, Radix UI primitives, and Lucide icons
   - Interactive Kanban board with drag-and-drop state transitions (`@dnd-kit`)
@@ -86,4 +97,3 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
 - ✅ Complete
 - 🔄 In Progress
 - ⬜ Planned
-

@@ -736,6 +736,7 @@ flowchart TB
 | **Storage** | Object Storage | **MinIO / AWS S3 (AWS SDK v2)** | Direct pre-signed URL upload/download — zero app-server I/O bottleneck. |
 | **Real-time** | Push Broker | **WebSocket + STOMP (SockJS)** | JWT-authenticated sessions, `convertAndSendToUser` point-to-point routing. |
 | **AI Assistant** | Generative AI | **Universal OpenAI-Compatible Client** | Single `/chat/completions` adapter supporting Groq, Gemini, Ollama, AI Gateways. |
+| **Observability** | Telemetry & Tracing | **OpenTelemetry (OTel) + OTLP** | CNCF standard vendor-neutral distributed tracing, W3C TraceContext, and Micrometer bridge. |
 | **Mapping** | Object Mapping | **MapStruct 1.6** | Compile-time type-safe DTO ↔ Entity mapping — zero reflection overhead. |
-| **API Docs** | Specification | **SpringDoc OpenAPI 3.1** | Auto-generated, always-in-sync Swagger UI at `/swagger-ui.html`. |
+| **API Docs** | Specification | **SpringDoc OpenAPI 3.1** | Auto-generated, always-in-sync Swagger UI at `/swagger-ui.html` + `docs/api/openapi.yaml`. |
 | **Quality** | Testing & Verification | **ArchUnit + Testcontainers + Checkstyle** | Compile-time hexagonal boundary enforcement + containerised integration test slices. |

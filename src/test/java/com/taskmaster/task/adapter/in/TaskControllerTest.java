@@ -148,7 +148,7 @@ class TaskControllerTest {
             Instant.now()
         );
 
-        when(taskService.getTaskById(taskId)).thenReturn(response);
+        when(taskService.getTaskById(eq(taskId), eq(creatorId))).thenReturn(response);
 
         mockMvc.perform(get("/api/v1/tasks/" + taskId)
                 .with(jwt().jwt(builder -> builder.subject(creatorId.toString()))))

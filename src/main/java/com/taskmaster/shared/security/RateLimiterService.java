@@ -1,11 +1,13 @@
 package com.taskmaster.shared.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.taskmaster.shared.exception.RateLimitExceededException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Distributed sliding-window rate limiter using Redis with in-memory fallback.
+ * Distributed sliding-window rate limiter using Redis with Caffeine-backed bounded in-memory fallback.
  */
 @Service
 public class RateLimiterService {
@@ -26,8 +28,11 @@ public class RateLimiterService {
     private final int defaultMaxRequests;
     private final int defaultWindowSeconds;
 
-    // In-memory fallback if Redis is unavailable or disabled
-    private final ConcurrentHashMap<String, ConcurrentLinkedQueue<Long>> inMemoryBuckets = new ConcurrentHashMap<>();
+    // Bounded in-memory LRU cache with TTL eviction to prevent memory leakage in fallback mode
+    private final Cache<String, ConcurrentLinkedQueue<Long>> inMemoryBuckets = Caffeine.newBuilder()
+        .maximumSize(50_000)
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .build();
 
     public RateLimiterService(
         @Autowired(required = false) StringRedisTemplate redisTemplate,
@@ -73,17 +78,19 @@ public class RateLimiterService {
             }
         }
 
-        // In-memory sliding window implementation
-        ConcurrentLinkedQueue<Long> timestamps = inMemoryBuckets.computeIfAbsent(key, k -> new ConcurrentLinkedQueue<>());
-        Long timestamp;
-        while ((timestamp = timestamps.peek()) != null && timestamp < windowStart) {
-            timestamps.poll();
-        }
+        // Bounded in-memory sliding window implementation with automatic eviction
+        ConcurrentLinkedQueue<Long> timestamps = inMemoryBuckets.get(key, k -> new ConcurrentLinkedQueue<>());
+        if (timestamps != null) {
+            Long timestamp;
+            while ((timestamp = timestamps.peek()) != null && timestamp < windowStart) {
+                timestamps.poll();
+            }
 
-        if (timestamps.size() >= maxRequests) {
-            throw new RateLimitExceededException("Too many requests. Please try again later.", windowSeconds);
-        }
+            if (timestamps.size() >= maxRequests) {
+                throw new RateLimitExceededException("Too many requests. Please try again later.", windowSeconds);
+            }
 
-        timestamps.add(now);
+            timestamps.add(now);
+        }
     }
 }
