@@ -1,5 +1,6 @@
 package com.taskmaster.notification.application.listener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taskmaster.collaboration.domain.event.TaskCommentCreatedEvent;
 import com.taskmaster.notification.application.service.NotificationService;
 import com.taskmaster.notification.domain.model.NotificationType;
@@ -10,6 +11,7 @@ import com.taskmaster.task.domain.port.TaskRepository;
 import com.taskmaster.team.domain.event.TeamMemberJoinedEvent;
 import com.taskmaster.team.domain.model.Team;
 import com.taskmaster.team.domain.port.TeamRepository;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -28,15 +30,18 @@ public class NotificationEventListener {
     private final NotificationService notificationService;
     private final TaskRepository taskRepository;
     private final TeamRepository teamRepository;
+    private final ObjectMapper objectMapper;
 
     public NotificationEventListener(
         NotificationService notificationService,
         TaskRepository taskRepository,
-        TeamRepository teamRepository
+        TeamRepository teamRepository,
+        ObjectMapper objectMapper
     ) {
         this.notificationService = notificationService;
         this.taskRepository = taskRepository;
         this.teamRepository = teamRepository;
+        this.objectMapper = objectMapper;
     }
 
     @EventListener
@@ -53,7 +58,7 @@ public class NotificationEventListener {
         Task task = taskOpt.get();
         String title = "Task Assigned";
         String message = String.format("You have been assigned to task: %s", task.getTitle());
-        String metadata = String.format("{\"taskId\":\"%s\"}", task.getId());
+        String metadata = serializeMetadata(Map.of("taskId", task.getId().toString()));
 
         notificationService.createAndSendNotification(
             event.assigneeId(),
@@ -75,7 +80,10 @@ public class NotificationEventListener {
         Task task = taskOpt.get();
         String title = "New Comment on Task";
         String message = String.format("A new comment was posted on: %s", task.getTitle());
-        String metadata = String.format("{\"taskId\":\"%s\",\"commentId\":\"%s\"}", task.getId(), event.commentId());
+        String metadata = serializeMetadata(Map.of(
+            "taskId", task.getId().toString(),
+            "commentId", event.commentId().toString()
+        ));
 
         // Notify Task Creator if not the commenter
         UUID creatorId = task.getCreator() != null ? task.getCreator().getId() : null;
@@ -112,7 +120,10 @@ public class NotificationEventListener {
         Task task = taskOpt.get();
         String title = "Task Status Updated";
         String message = String.format("Task '%s' moved from %s to %s", task.getTitle(), event.oldStatus(), event.newStatus());
-        String metadata = String.format("{\"taskId\":\"%s\",\"status\":\"%s\"}", task.getId(), event.newStatus());
+        String metadata = serializeMetadata(Map.of(
+            "taskId", task.getId().toString(),
+            "status", event.newStatus().name()
+        ));
 
         UUID creatorId = task.getCreator() != null ? task.getCreator().getId() : null;
         if (creatorId != null) {
@@ -139,7 +150,10 @@ public class NotificationEventListener {
         if (ownerId != null && !ownerId.equals(event.userId())) {
             String title = "New Team Member";
             String message = String.format("A new member joined your workspace: %s", team.getName());
-            String metadata = String.format("{\"teamId\":\"%s\",\"userId\":\"%s\"}", team.getId(), event.userId());
+            String metadata = serializeMetadata(Map.of(
+                "teamId", team.getId().toString(),
+                "userId", event.userId().toString()
+            ));
 
             notificationService.createAndSendNotification(
                 ownerId,
@@ -148,6 +162,15 @@ public class NotificationEventListener {
                 message,
                 metadata
             );
+        }
+    }
+
+    private String serializeMetadata(Map<String, String> metadataMap) {
+        try {
+            return objectMapper.writeValueAsString(metadataMap);
+        } catch (Exception e) {
+            log.warn("Failed to serialize notification metadata: {}", e.getMessage());
+            return "{}";
         }
     }
 }

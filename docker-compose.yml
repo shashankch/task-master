@@ -64,6 +64,17 @@ services:
       timeout: 5s
       retries: 5
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: taskmaster-jaeger
+    restart: unless-stopped
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "16686:16686" # Jaeger UI
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
 volumes:
   postgres_data:
     name: taskmaster_postgres_data

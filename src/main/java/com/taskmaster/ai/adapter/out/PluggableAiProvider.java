@@ -1,6 +1,8 @@
 package com.taskmaster.ai.adapter.out;
 
 import com.taskmaster.ai.domain.port.AiProvider;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -8,12 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /**
  * Universal, vendor-agnostic AI provider using the OpenAI-Compatible Chat Completions standard.
- * Compatible with Groq Cloud, Google Gemini (OpenAI endpoint), Ollama, vLLM, LiteLLM, and AI Gateways.
+ * Configured with connection and read timeouts and resilient heuristic fallback.
  */
 @Component
 public class PluggableAiProvider implements AiProvider {
@@ -25,6 +28,7 @@ public class PluggableAiProvider implements AiProvider {
     private final String apiKey;
     private final String model;
     private final double temperature;
+    private final int timeoutSeconds;
     private final boolean fallbackEnabled;
     private final RestClient restClient;
 
@@ -34,6 +38,7 @@ public class PluggableAiProvider implements AiProvider {
         @Value("${app.ai.api-key:}") String apiKey,
         @Value("${app.ai.model:llama-3.3-70b-versatile}") String model,
         @Value("${app.ai.temperature:0.2}") double temperature,
+        @Value("${app.ai.timeout-seconds:10}") int timeoutSeconds,
         @Value("${app.ai.fallback-enabled:true}") boolean fallbackEnabled
     ) {
         this.enabled = enabled;
@@ -41,8 +46,19 @@ public class PluggableAiProvider implements AiProvider {
         this.apiKey = apiKey;
         this.model = model != null && !model.isBlank() ? model : "llama-3.3-70b-versatile";
         this.temperature = temperature;
+        this.timeoutSeconds = timeoutSeconds;
         this.fallbackEnabled = fallbackEnabled;
-        this.restClient = RestClient.builder().build();
+
+        HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(Duration.ofSeconds(timeoutSeconds));
+
+        this.restClient = RestClient.builder()
+            .requestFactory(requestFactory)
+            .build();
     }
 
     @Override

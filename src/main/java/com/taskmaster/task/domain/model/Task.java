@@ -18,12 +18,14 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * Task aggregate root representing assignable units of work.
  */
 @Entity
 @Table(name = "tasks")
+@SQLRestriction("deleted_at IS NULL")
 public class Task extends BaseEntity {
 
     @Column(name = "title", nullable = false)

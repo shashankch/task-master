@@ -36,6 +36,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.taskmaster.team.domain.port.TeamMemberRepository;
+
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
 
@@ -44,6 +46,9 @@ class TaskServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TeamMemberRepository teamMemberRepository;
 
     @Mock
     private TaskEventPublisher taskEventPublisher;
@@ -58,7 +63,7 @@ class TaskServiceTest {
     void setUp() {
         UserMapper userMapper = new UserMapper();
         taskMapper = new TaskMapper(userMapper);
-        taskService = new TaskService(taskRepository, userRepository, taskMapper, taskEventPublisher);
+        taskService = new TaskService(taskRepository, userRepository, teamMemberRepository, taskMapper, taskEventPublisher);
 
         creator = new User("creator@example.com", "creator", "pw", "Creator", Role.USER);
         creator.setId(UUID.randomUUID());

@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-08-27
+
+### Added
+- **Persistent RSA Cryptography**: Load persistent 2048-bit RSA PEM key pairs (`certs/private.pem`, `certs/public.pem`) in `JwtConfig` with environment variable overrides for zero-session-loss restarts and multi-replica consistency.
+- **Environment-Driven CORS Allowlist**: Replaced wildcard CORS with explicit allowed origin configuration (`app.cors.allowed-origins`) across REST and WebSocket STOMP ingress.
+- **Real AWS SDK v2 S3/MinIO Storage Adapter**: Direct binary uploads and cryptographic pre-signed download URLs via AWS SDK v2 `S3Client` and `S3Presigner` with resilient offline fallback.
+- **IDOR Protection & Team Authorization Gates**: Enforced team membership validation across task read, update, status transition, assignment, and deletion endpoints.
+- **Vendor-Neutral OpenTelemetry (OTel)**: Integrated Micrometer Tracing bridge for OpenTelemetry with standard OTLP HTTP exporter (`io.opentelemetry:opentelemetry-exporter-otlp`), W3C TraceContext propagation, and local Jaeger all-in-one container.
+- **OpenAPI 3.1 Standards & Export**: Validated static `docs/api/openapi.yaml` specification with automated integration test verification (`OpenApiExportTest`).
+- **Bounded In-Memory Rate Limiting**: Upgraded in-memory rate limiter fallback to Caffeine cache with 50k LRU capacity and 5-minute TTL eviction.
+- **Resilience & Concurrency**:
+  - Configured connection (5s) and read timeouts on AI RestClient.
+  - Added RFC 7807 409 Conflict handler for `ObjectOptimisticLockingFailureException`.
+  - Added Hibernate `@SQLRestriction("deleted_at IS NULL")` on `Task` and `TaskComment` entities for automated soft-delete filtering.
+  - Aligned Java compilation target to Java 25 bytecode release.
+  - Expanded ArchUnit fitness rules for layer isolation and dependency decoupling.
+  - Removed `allow-bean-definition-overriding` to catch bean configuration collisions early.
+
+---
+
 ## [1.0.0] - 2026-08-23
 
 ### Added

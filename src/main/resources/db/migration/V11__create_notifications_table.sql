@@ -12,6 +12,7 @@ CREATE TABLE notifications (
     metadata TEXT,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     read_at TIMESTAMPTZ,
     CONSTRAINT chk_notification_type CHECK (type IN ('TASK_ASSIGNED', 'COMMENT_ADDED', 'TEAM_INVITE', 'TASK_UPDATED', 'MENTION'))
 );

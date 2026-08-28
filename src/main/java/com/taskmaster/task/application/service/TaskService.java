@@ -1,6 +1,7 @@
 package com.taskmaster.task.application.service;
 
 import com.taskmaster.shared.dto.PageResponse;
+import com.taskmaster.shared.exception.ForbiddenException;
 import com.taskmaster.shared.exception.ResourceNotFoundException;
 import com.taskmaster.task.adapter.out.TaskSpecification;
 import com.taskmaster.task.application.dto.AssignTaskRequest;
@@ -19,6 +20,7 @@ import com.taskmaster.task.domain.model.Task;
 import com.taskmaster.task.domain.model.TaskStatus;
 import com.taskmaster.task.domain.port.TaskEventPublisher;
 import com.taskmaster.task.domain.port.TaskRepository;
+import com.taskmaster.team.domain.port.TeamMemberRepository;
 import com.taskmaster.user.domain.model.User;
 import com.taskmaster.user.domain.port.UserRepository;
 import java.util.UUID;
@@ -29,24 +31,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Application service managing Task lifecycle, querying, state transitions, and assignment.
+ * Application service managing Task lifecycle, querying, state transitions, and assignment with team authorization gates.
  */
 @Service
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final TeamMemberRepository teamMemberRepository;
     private final TaskMapper taskMapper;
     private final TaskEventPublisher taskEventPublisher;
 
     public TaskService(
         TaskRepository taskRepository,
         UserRepository userRepository,
+        TeamMemberRepository teamMemberRepository,
         TaskMapper taskMapper,
         TaskEventPublisher taskEventPublisher
     ) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.teamMemberRepository = teamMemberRepository;
         this.taskMapper = taskMapper;
         this.taskEventPublisher = taskEventPublisher;
     }
@@ -55,6 +60,10 @@ public class TaskService {
     public TaskResponse createTask(UUID creatorId, CreateTaskRequest request) {
         User creator = userRepository.findById(creatorId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", creatorId));
+
+        if (request.teamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(request.teamId(), creatorId)) {
+            throw new ForbiddenException("You are not a member of the team specified for this task");
+        }
 
         User assignee = null;
         if (request.assigneeId() != null) {
@@ -95,10 +104,22 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public TaskResponse getTaskById(UUID taskId) {
+    public TaskResponse getTaskById(UUID taskId, UUID currentUserId) {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
+
+        if (task.getTeamId() != null && currentUserId != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        }
+
         return taskMapper.toResponse(task);
+    }
+
+    @Transactional(readOnly = true)
+    public TaskResponse getTaskById(UUID taskId) {
+        return getTaskById(taskId, null);
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +133,10 @@ public class TaskService {
     public TaskResponse updateTask(UUID taskId, UUID updaterId, UpdateTaskRequest request) {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
+
+        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), updaterId)) {
+            throw new ForbiddenException("You are not a member of the team this task belongs to");
+        }
 
         task.updateDetails(
             request.title(),
@@ -137,6 +162,10 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
+        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), changerId)) {
+            throw new ForbiddenException("You are not a member of the team this task belongs to");
+        }
+
         TaskStatus oldStatus = task.getStatus();
         task.updateStatus(request.status());
 
@@ -158,11 +187,20 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
+        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), assignerId)) {
+            throw new ForbiddenException("You are not a member of the team this task belongs to");
+        }
+
         if (request.assigneeId() == null) {
             task.unassign();
         } else {
             User assignee = userRepository.findById(request.assigneeId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.assigneeId()));
+
+            if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), assignee.getId())) {
+                throw new ForbiddenException("Assignee must be a member of the team this task belongs to");
+            }
+
             task.assignTo(assignee);
 
             taskEventPublisher.publish(TaskAssignedEvent.of(
@@ -181,6 +219,10 @@ public class TaskService {
     public void deleteTask(UUID taskId, UUID deleterId) {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
+
+        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), deleterId)) {
+            throw new ForbiddenException("You are not a member of the team this task belongs to");
+        }
 
         task.softDelete();
         taskRepository.save(task);

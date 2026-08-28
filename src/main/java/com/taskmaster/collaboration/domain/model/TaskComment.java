@@ -15,9 +15,11 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "task_comments")
+@SQLRestriction("deleted_at IS NULL")
 public class TaskComment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

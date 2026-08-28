@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -18,7 +19,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+/**
+ * Global exception handler translating domain and infrastructure exceptions to standard RFC 7807 ProblemDetail envelopes.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -34,12 +39,35 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+        log.warn("Static resource or endpoint not found: {}", ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setTitle("Resource Not Found");
+        problemDetail.setType(URI.create("https://taskmaster.dev/errors/not-found"));
+        enrichProblemDetail(problemDetail, request);
+        return problemDetail;
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ProblemDetail handleConflict(ConflictException ex, WebRequest request) {
         log.warn("Conflict error: {}", ex.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problemDetail.setTitle("Conflict");
         problemDetail.setType(URI.create("https://taskmaster.dev/errors/conflict"));
+        enrichProblemDetail(problemDetail, request);
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLockFailure(ObjectOptimisticLockingFailureException ex, WebRequest request) {
+        log.warn("Optimistic locking conflict on concurrent modification: {}", ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "The resource was modified by another transaction. Please reload and retry."
+        );
+        problemDetail.setTitle("Concurrent Modification Conflict");
+        problemDetail.setType(URI.create("https://taskmaster.dev/errors/optimistic-lock-conflict"));
         enrichProblemDetail(problemDetail, request);
         return problemDetail;
     }
