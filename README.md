@@ -2,11 +2,11 @@
 
 <div align="center">
 
-[![Build Status](https://img.shields.io/badge/Build-Passing-2ea44f?style=for-the-badge&logo=github-actions&logoColor=white)]()
-[![Java 25](https://img.shields.io/badge/Java-25%20(LTS)-f89820?style=for-the-badge&logo=openjdk&logoColor=white)]()
-[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0.0-6db33f?style=for-the-badge&logo=springboot&logoColor=white)]()
-[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)]()
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTel%20Standard-4a154b?style=for-the-badge&logo=opentelemetry&logoColor=white)]()
+[![CI Build](https://img.shields.io/github/actions/workflow/status/shashankch/task-master/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20Build)](https://github.com/shashankch/task-master/actions/workflows/ci.yml)
+[![Java 25](https://img.shields.io/badge/Java-25%20(LTS)-f89820?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/25/)
+[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0.0-6db33f?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTel%20Standard-4a154b?style=for-the-badge&logo=opentelemetry&logoColor=white)](https://opentelemetry.io/)
 [![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1%20Spec-85ea2d?style=for-the-badge&logo=openapiinitiative&logoColor=black)](./docs/api/openapi.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](./LICENSE)
 
@@ -112,7 +112,7 @@ TaskMaster is an enterprise-grade collaborative task tracking platform designed 
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/shashankchandel/task-master.git
+git clone https://github.com/shashankch/task-master.git
 cd task-master
 ```
 
@@ -206,7 +206,7 @@ Track development progress across engineering phases:
 - ✅ **Phase 6: Production Hardening, Security Remediation & Open Standards** (Persistent RSA Keys, OTel Tracing, OpenAPI 3.1 YAML, S3 Client Engine, IDOR Authorization)
 - ⬜ **Phase 7: Advanced Search & Analytics** (Elasticsearch Cluster Sync, Velocity Metrics, Audit Trails)
 - ⬜ **Phase 8: Performance & Reliability** (Distributed Redis Rate Limiting, Resilience4j Circuit Breaking)
-- ⬜ **Phase 9: DevOps & Cloud Deployment** (Distroless Containerization, Kubernetes HPA Manifests, GitHub Actions CI/CD)
+- ⬜ **Phase 9: DevOps, Cloud & Multi-Platform Deployment** (Self-Hosting, PaaS Railway/Render, Distroless Containerization, Kubernetes HPA, AWS/GCP/Azure/OCI)
 - ⬜ **Phase 10: Extended Platform Capabilities** (DAG Task Dependencies, Recurring Automation, Kanban Positional Engine)
 - ⬜ **Phase 11: Modern Collaborative Web Application (Frontend)** (Next.js 15, React 19, Tailwind CSS, Kanban UI, Real-time WebSocket Client)
 
@@ -221,12 +221,13 @@ For in-depth milestone specifications, see [`docs/ROADMAP.md`](./docs/ROADMAP.md
 - 📋 **Static OpenAPI 3.1 YAML Schema**: [`docs/api/openapi.yaml`](./docs/api/openapi.yaml)
 - 🏛️ **Architecture Decision Records (ADRs)**: [`docs/adr/`](./docs/adr/)
   - [ADR 0001: Modular Monolith Architecture](./docs/adr/0001-modular-monolith.md)
-  - [ADR 0002: PostgreSQL & Flyway Strategy](./docs/adr/0002-postgresql-flyway.md)
+  - [ADR 0002: PostgreSQL & Flyway Strategy](./docs/adr/0002-postgresql.md)
   - [ADR 0003: Hexagonal Architecture Boundaries](./docs/adr/0003-hexagonal-architecture.md)
-  - [ADR 0004: Event-Driven Architecture](./docs/adr/0004-event-driven-architecture.md)
+  - [ADR 0004: Event-Driven Architecture with Spring Cloud Stream](./docs/adr/0004-spring-cloud-stream.md)
   - [ADR 0005: Universal OpenAI-Compatible AI Strategy](./docs/adr/0005-ai-provider-strategy.md)
   - [ADR 0006: OpenTelemetry (OTel) Standard for Observability](./docs/adr/0006-opentelemetry-vendor-neutrality.md)
   - [ADR 0007: Pluggable Free-Tier & Open-Source First Strategy](./docs/adr/0007-free-tier-pluggable-infrastructure.md)
+  - [ADR 0008: Multi-Platform Cloud, PaaS & Container Deployment Strategy](./docs/adr/0008-multi-platform-cloud-paas-deployment-strategy.md)
 - 🤝 **Contributing Guidelines**: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 ---
