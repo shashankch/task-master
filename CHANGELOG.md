@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- Fixed README badge links to point to active CI workflow status and official technology specifications.
+- Corrected git clone command and ADR relative markdown paths in README.
+- Added ADR 0008 establishing multi-platform deployment strategy across Self-Hosting, PaaS (Railway/Render), Kubernetes, and Major Cloud Providers (AWS/GCP/Azure/OCI).
+- Updated roadmap and architecture specifications with multi-target hosting matrix.
+
 ---
 
 ## [1.1.0] - 2026-08-27

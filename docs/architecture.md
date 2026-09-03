@@ -722,6 +722,17 @@ flowchart TB
     PN --> OBJ
 ```
 
+### Multi-Platform Deployment Targets
+
+| Deployment Target | Orchestration / Artifacts | Environment Profiles & Ingress |
+|:---|:---|:---|
+| **Local / Self-Hosting** | `docker-compose.yml` (PostgreSQL 17, Redis, RabbitMQ, MinIO, Jaeger, Elasticsearch) | `dev` profile (`application-dev.yml`), localhost port mapping |
+| **Modern PaaS (Railway / Render)** | `railway.json` / `render.yaml` with dynamic `PORT` injection & managed addon DBs | `prod` profile (`application-prod.yml`), dynamic SSL DB connection strings |
+| **Kubernetes (K8s)** | Multi-stage Distroless Java 25 Image, `k8s/` manifests (Deployment, Service, Ingress, HPA) | `prod` profile, Kubernetes Liveness/Readiness probes (`/actuator/health/*`) |
+| **Cloud (AWS/GCP/Azure/OCI)** | AWS ECS Fargate / GCP Cloud Run / Azure Container Apps / OCI Ampere A1 Compute | Cloud-managed Aurora/RDS, ElastiCache, S3, and OTLP OpenTelemetry exporters |
+
+For detailed architectural trade-offs and design rationale, see [ADR 0008: Multi-Platform Cloud, PaaS & Container Deployment Strategy](./adr/0008-multi-platform-cloud-paas-deployment-strategy.md).
+
 ---
 
 ## 11. Technology Baseline Matrix

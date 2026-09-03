@@ -69,11 +69,14 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Circuit breaking and fault tolerance via Resilience4j
   - Idempotency key tracking for non-idempotent mutations
 
-- ⬜ **Phase 9: DevOps & Cloud Deployment**
-  - Multi-stage minimal containerization
-  - Production Kubernetes manifests (Deployments, Services, HPA, ConfigMaps)
-  - GitHub Actions automated CI/CD pipeline
-  - Full observability stack (OpenTelemetry tracing, Prometheus metrics, Grafana dashboards)
+- ⬜ **Phase 9: DevOps, Cloud & Multi-Platform Deployment**
+  - Multi-stage minimal containerization with Distroless / Eclipse Temurin Java 25
+  - Self-hosting & local orchestration with single-command Docker Compose stack
+  - 1-Click PaaS deployment blueprints (`railway.json` and `render.yaml` with dynamic SSL & port injection)
+  - Production Kubernetes manifests in `k8s/` (Deployments, Services, Ingress with WebSocket upgrades, HPA, ConfigMaps, Secrets)
+  - Major cloud deployment blueprints (AWS ECS Fargate / RDS / S3, Google Cloud Run, Azure Container Apps, OCI Ampere)
+  - GitHub Actions automated CI/CD pipeline for building, testing, and container image publishing
+  - Full observability visualization (OpenTelemetry OTLP traces in Jaeger, Prometheus metrics, Grafana dashboards)
 
 - ⬜ **Phase 10: Extended Platform Capabilities**
   - Directed Acyclic Graph (DAG) task dependency engine with cycle detection
