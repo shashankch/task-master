@@ -150,4 +150,53 @@ class CollaborationIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.message").value("Attachment successfully deleted"));
     }
+
+    @Test
+    @DisplayName("Personal Task Collaboration Security: Stranger cannot comment or attach files to personal task")
+    void personalTaskCollaborationSecurity() throws Exception {
+        String email2 = "stranger_" + UUID.randomUUID() + "@example.com";
+        String username2 = "stranger_" + UUID.randomUUID().toString().substring(0, 8);
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new RegisterRequest(email2, username2, "Password@123", "Stranger"))))
+            .andExpect(status().isCreated());
+
+        MvcResult login2 = mockMvc.perform(post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new LoginRequest(username2, "Password@123"))))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        String strangerToken = objectMapper.readTree(login2.getResponse().getContentAsString())
+            .path("data").path("accessToken").asText();
+
+        // 1. Stranger attempts to post comment on User 1's personal task -> 403 Forbidden
+        CreateCommentRequest commentReq = new CreateCommentRequest("Sneaking in a comment", null);
+        mockMvc.perform(post("/api/v1/tasks/" + taskId + "/comments")
+                .header("Authorization", "Bearer " + strangerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(commentReq)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 2. Stranger attempts to read comments on User 1's personal task -> 403 Forbidden
+        mockMvc.perform(get("/api/v1/tasks/" + taskId + "/comments")
+                .header("Authorization", "Bearer " + strangerToken))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 3. Stranger attempts to upload attachment to User 1's personal task -> 403 Forbidden
+        MockMultipartFile file = new MockMultipartFile("file", "exploit.txt", "text/plain", "data".getBytes());
+        mockMvc.perform(multipart("/api/v1/tasks/" + taskId + "/attachments")
+                .file(file)
+                .header("Authorization", "Bearer " + strangerToken))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 4. Stranger attempts to read attachments of User 1's personal task -> 403 Forbidden
+        mockMvc.perform(get("/api/v1/tasks/" + taskId + "/attachments")
+                .header("Authorization", "Bearer " + strangerToken))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+    }
 }

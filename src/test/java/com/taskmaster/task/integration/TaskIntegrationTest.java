@@ -208,4 +208,74 @@ class TaskIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.totalElements").value(0));
     }
+
+    @Test
+    @DisplayName("Multi-Tenant Task Isolation: Stranger is forbidden from accessing or listing personal tasks")
+    void personalTaskIsolation() throws Exception {
+        // User 1 creates a personal task
+        CreateTaskRequest createReq = new CreateTaskRequest(
+            "User 1 Private Secret",
+            "Confidential personal notes",
+            TaskPriority.URGENT,
+            null,
+            null,
+            null,
+            Set.of("private")
+        );
+
+        MvcResult createRes = mockMvc.perform(post("/api/v1/tasks")
+                .header("Authorization", "Bearer " + userToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createReq)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        String taskId = objectMapper.readTree(createRes.getResponse().getContentAsString())
+            .path("data").path("id").asText();
+
+        // 1. User 2 (stranger) attempts to GET User 1's personal task -> 403 Forbidden
+        mockMvc.perform(get("/api/v1/tasks/" + taskId)
+                .header("Authorization", "Bearer " + secondUserToken))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 2. User 2 attempts to UPDATE User 1's personal task -> 403 Forbidden
+        UpdateTaskRequest updateReq = new UpdateTaskRequest(
+            "Hacked Title", "Hacked description", TaskPriority.LOW, null, Set.of()
+        );
+        mockMvc.perform(put("/api/v1/tasks/" + taskId)
+                .header("Authorization", "Bearer " + secondUserToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateReq)))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 3. User 2 attempts to ASSIGN User 1's personal task -> 403 Forbidden
+        mockMvc.perform(patch("/api/v1/tasks/" + taskId + "/assign")
+                .header("Authorization", "Bearer " + secondUserToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AssignTaskRequest(secondUserId))))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 4. User 2 attempts to DELETE User 1's personal task -> 403 Forbidden
+        mockMvc.perform(delete("/api/v1/tasks/" + taskId)
+                .header("Authorization", "Bearer " + secondUserToken))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+
+        // 5. User 2 calls GET /api/v1/tasks -> User 1's personal task is NOT returned
+        mockMvc.perform(get("/api/v1/tasks")
+                .header("Authorization", "Bearer " + secondUserToken)
+                .param("search", "Private Secret"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.totalElements").value(0));
+
+        // 6. User 2 tries to search with a random/unjoined teamId -> 403 Forbidden
+        mockMvc.perform(get("/api/v1/tasks")
+                .header("Authorization", "Bearer " + secondUserToken)
+                .param("teamId", UUID.randomUUID().toString()))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
+    }
 }

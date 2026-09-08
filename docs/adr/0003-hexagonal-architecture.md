@@ -1,7 +1,10 @@
 # ADR 0003: Hexagonal (Ports and Adapters) Architecture
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-20
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 In traditional layered architectures, business domain models frequently become coupled to ORM entities, web frameworks, or third-party SDKs. This makes unit testing tedious and complicates switching infrastructure providers (e.g., changing storage providers from MinIO to AWS S3).

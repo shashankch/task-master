@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taskmaster.shared.config.JacksonConfig;
 import com.taskmaster.shared.config.SecurityConfig;
 import com.taskmaster.shared.dto.PageResponse;
+import com.taskmaster.shared.exception.ForbiddenException;
 import com.taskmaster.shared.exception.GlobalExceptionHandler;
 import com.taskmaster.shared.security.JwtConfig;
 import com.taskmaster.shared.security.RateLimiterService;
@@ -200,7 +201,7 @@ class TaskControllerTest {
             false
         );
 
-        when(taskService.searchTasks(any(TaskFilterCriteria.class), any(Pageable.class))).thenReturn(pageResponse);
+        when(taskService.searchTasks(any(TaskFilterCriteria.class), eq(creatorId), any(Pageable.class))).thenReturn(pageResponse);
 
         mockMvc.perform(get("/api/v1/tasks")
                 .with(jwt().jwt(builder -> builder.subject(creatorId.toString())))
@@ -210,6 +211,22 @@ class TaskControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.content[0].title").value("Task 1"))
             .andExpect(jsonPath("$.data.totalElements").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/tasks should return 403 when user is not member of specified team")
+    void searchTasks_WhenNotTeamMember_ShouldReturn403() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID teamId = UUID.randomUUID();
+
+        when(taskService.searchTasks(any(TaskFilterCriteria.class), eq(userId), any(Pageable.class)))
+            .thenThrow(new ForbiddenException("You are not a member of the team specified in the filter"));
+
+        mockMvc.perform(get("/api/v1/tasks")
+                .with(jwt().jwt(builder -> builder.subject(userId.toString())))
+                .param("teamId", teamId.toString()))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.status").value(403));
     }
 
     @Test

@@ -1,7 +1,10 @@
 # ADR 0004: Event-Driven Messaging with Spring Cloud Stream & RabbitMQ
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-20
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 Asynchronous domain events (e.g. task assignments, mentions, status updates) require reliable decoupling between event publication and consumption (such as generating notification records and dispatching real-time WebSocket pushes).

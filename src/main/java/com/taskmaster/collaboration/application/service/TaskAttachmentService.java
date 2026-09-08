@@ -70,9 +70,7 @@ public class TaskAttachmentService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), uploaderId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, uploaderId);
 
         User uploader = userRepository.findById(uploaderId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", uploaderId));
@@ -116,9 +114,7 @@ public class TaskAttachmentService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, currentUserId);
 
         List<TaskAttachment> attachments = taskAttachmentRepository.findAllByTaskId(taskId);
         return attachments.stream().map(attachmentMapper::toResponse).toList();
@@ -137,5 +133,22 @@ public class TaskAttachmentService {
         taskAttachmentRepository.delete(attachment);
 
         eventPublisher.publish(TaskAttachmentDeletedEvent.of(attachment.getId(), attachment.getTask().getId(), currentUserId));
+    }
+
+    private void validateTaskAccess(Task task, UUID userId) {
+        if (userId == null) {
+            throw new ForbiddenException("Authentication is required to access attachments for this task");
+        }
+        if (task.getTeamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), userId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        } else {
+            boolean isCreator = task.getCreator().getId().equals(userId);
+            boolean isAssignee = task.getAssignee() != null && task.getAssignee().getId().equals(userId);
+            if (!isCreator && !isAssignee) {
+                throw new ForbiddenException("You do not have permission to access attachments on this personal task");
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@ import com.taskmaster.task.domain.port.TaskRepository;
 import com.taskmaster.team.domain.port.TeamMemberRepository;
 import com.taskmaster.user.domain.model.User;
 import com.taskmaster.user.domain.port.UserRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -108,23 +109,41 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && currentUserId != null) {
-            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
-                throw new ForbiddenException("You are not a member of the team this task belongs to");
-            }
-        }
-
+        validateTaskAccess(task, currentUserId);
         return taskMapper.toResponse(task);
     }
 
     @Transactional(readOnly = true)
-    public TaskResponse getTaskById(UUID taskId) {
-        return getTaskById(taskId, null);
-    }
+    public PageResponse<TaskResponse> searchTasks(TaskFilterCriteria criteria, UUID currentUserId, Pageable pageable) {
+        if (currentUserId == null) {
+            throw new ForbiddenException("Authentication is required to search tasks");
+        }
 
-    @Transactional(readOnly = true)
-    public PageResponse<TaskResponse> searchTasks(TaskFilterCriteria criteria, Pageable pageable) {
-        Specification<Task> spec = TaskSpecification.withFilter(criteria);
+        List<UUID> allowedTeamIds = null;
+        if (criteria != null && criteria.teamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(criteria.teamId(), currentUserId)) {
+                throw new ForbiddenException("You are not a member of the team specified in the filter");
+            }
+        } else {
+            allowedTeamIds = teamMemberRepository.findTeamIdsByUserId(currentUserId);
+        }
+
+        TaskFilterCriteria scopedCriteria = new TaskFilterCriteria(
+            criteria != null ? criteria.status() : null,
+            criteria != null ? criteria.priority() : null,
+            criteria != null ? criteria.assigneeId() : null,
+            criteria != null ? criteria.creatorId() : null,
+            criteria != null ? criteria.teamId() : null,
+            criteria != null ? criteria.search() : null,
+            criteria != null ? criteria.dueDateFrom() : null,
+            criteria != null ? criteria.dueDateTo() : null,
+            criteria != null ? criteria.label() : null,
+            criteria != null ? criteria.includeDeleted() : false,
+            currentUserId,
+            allowedTeamIds
+        );
+
+        Specification<Task> spec = TaskSpecification.withFilter(scopedCriteria);
         Page<Task> page = taskRepository.findAll(spec, pageable);
         return PageResponse.from(page.map(taskMapper::toResponse));
     }
@@ -134,9 +153,7 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), updaterId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, updaterId);
 
         task.updateDetails(
             request.title(),
@@ -162,9 +179,7 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), changerId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, changerId);
 
         TaskStatus oldStatus = task.getStatus();
         task.updateStatus(request.status());
@@ -187,9 +202,7 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), assignerId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskCreatorAccess(task, assignerId, "assign");
 
         if (request.assigneeId() == null) {
             task.unassign();
@@ -220,13 +233,43 @@ public class TaskService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), deleterId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskCreatorAccess(task, deleterId, "delete");
 
         task.softDelete();
         taskRepository.save(task);
 
         taskEventPublisher.publish(TaskDeletedEvent.of(taskId, deleterId));
+    }
+
+    private void validateTaskAccess(Task task, UUID userId) {
+        if (userId == null) {
+            throw new ForbiddenException("Authentication is required to access this task");
+        }
+        if (task.getTeamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), userId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        } else {
+            boolean isCreator = task.getCreator().getId().equals(userId);
+            boolean isAssignee = task.getAssignee() != null && task.getAssignee().getId().equals(userId);
+            if (!isCreator && !isAssignee) {
+                throw new ForbiddenException("You do not have permission to access this personal task");
+            }
+        }
+    }
+
+    private void validateTaskCreatorAccess(Task task, UUID userId, String action) {
+        if (userId == null) {
+            throw new ForbiddenException("Authentication is required to " + action + " this task");
+        }
+        if (task.getTeamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), userId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        } else {
+            if (!task.getCreator().getId().equals(userId)) {
+                throw new ForbiddenException("Only the task creator can " + action + " this personal task");
+            }
+        }
     }
 }

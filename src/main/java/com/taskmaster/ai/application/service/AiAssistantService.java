@@ -98,9 +98,7 @@ public class AiAssistantService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, currentUserId);
 
         List<TaskComment> comments = taskCommentRepository.findRootCommentsByTaskId(taskId);
         StringBuilder context = new StringBuilder();
@@ -171,6 +169,10 @@ public class AiAssistantService {
             throw new ForbiddenException("You are not a member of this team");
         }
 
+        List<UUID> allowedTeamIds = request.teamId() == null
+            ? teamMemberRepository.findTeamIdsByUserId(currentUserId)
+            : null;
+
         TaskFilterCriteria criteria = new TaskFilterCriteria(
             null,
             null,
@@ -181,7 +183,9 @@ public class AiAssistantService {
             null,
             null,
             null,
-            false
+            false,
+            currentUserId,
+            allowedTeamIds
         );
 
         Page<Task> matchingTasks = taskRepository.findAll(TaskSpecification.withFilter(criteria), PageRequest.of(0, 5));
@@ -242,5 +246,22 @@ public class AiAssistantService {
         }
 
         return Math.min(1.0, (double) common / (double) Math.max(1, Math.min(words1.length, words2.length)));
+    }
+
+    private void validateTaskAccess(Task task, UUID userId) {
+        if (userId == null) {
+            throw new ForbiddenException("Authentication is required to access this task");
+        }
+        if (task.getTeamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), userId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        } else {
+            boolean isCreator = task.getCreator().getId().equals(userId);
+            boolean isAssignee = task.getAssignee() != null && task.getAssignee().getId().equals(userId);
+            if (!isCreator && !isAssignee) {
+                throw new ForbiddenException("You do not have permission to access this personal task");
+            }
+        }
     }
 }

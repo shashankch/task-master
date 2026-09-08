@@ -1,7 +1,10 @@
 # ADR 0002: Use PostgreSQL 17 as Primary Datastore
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-20
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 TaskMaster requires robust data storage supporting relational entities (users, teams, memberships, tasks, comments, attachments) with strict transactional consistency guarantees. We evaluated relational (PostgreSQL, MySQL) and document-oriented (MongoDB) databases.

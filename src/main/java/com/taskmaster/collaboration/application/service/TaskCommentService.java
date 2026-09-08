@@ -57,9 +57,7 @@ public class TaskCommentService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), authorId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, authorId);
 
         User author = userRepository.findById(authorId)
             .orElseThrow(() -> new ResourceNotFoundException("User", "id", authorId));
@@ -95,9 +93,7 @@ public class TaskCommentService {
         Task task = taskRepository.findByIdAndNotDeleted(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, currentUserId);
 
         List<TaskComment> rootComments = taskCommentRepository.findRootCommentsByTaskId(taskId);
         return rootComments.stream().map(commentMapper::toResponse).toList();
@@ -109,9 +105,7 @@ public class TaskCommentService {
             .orElseThrow(() -> new ResourceNotFoundException("TaskComment", "id", commentId));
 
         Task task = comment.getTask();
-        if (task.getTeamId() != null && !teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), currentUserId)) {
-            throw new ForbiddenException("You are not a member of the team this task belongs to");
-        }
+        validateTaskAccess(task, currentUserId);
 
         if (comment.isDeleted()) {
             throw new BadRequestException("Cannot edit a deleted comment");
@@ -142,5 +136,22 @@ public class TaskCommentService {
         taskCommentRepository.save(comment);
 
         eventPublisher.publish(TaskCommentDeletedEvent.of(comment.getId(), comment.getTask().getId(), currentUserId));
+    }
+
+    private void validateTaskAccess(Task task, UUID userId) {
+        if (userId == null) {
+            throw new ForbiddenException("Authentication is required to access comments on this task");
+        }
+        if (task.getTeamId() != null) {
+            if (!teamMemberRepository.existsByTeamIdAndUserId(task.getTeamId(), userId)) {
+                throw new ForbiddenException("You are not a member of the team this task belongs to");
+            }
+        } else {
+            boolean isCreator = task.getCreator().getId().equals(userId);
+            boolean isAssignee = task.getAssignee() != null && task.getAssignee().getId().equals(userId);
+            if (!isCreator && !isAssignee) {
+                throw new ForbiddenException("You do not have permission to access comments on this personal task");
+            }
+        }
     }
 }

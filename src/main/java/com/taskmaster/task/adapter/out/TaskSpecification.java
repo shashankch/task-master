@@ -49,9 +49,24 @@ public final class TaskSpecification {
                 predicates.add(criteriaBuilder.equal(root.get("creator").get("id"), criteria.creatorId()));
             }
 
-            // 6. Team filter
+            // 6. Team filter & Tenant Isolation
             if (criteria.teamId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("teamId"), criteria.teamId()));
+            } else if (criteria.currentUserId() != null) {
+                Predicate personalTasks = criteriaBuilder.and(
+                    criteriaBuilder.isNull(root.get("teamId")),
+                    criteriaBuilder.or(
+                        criteriaBuilder.equal(root.get("creator").get("id"), criteria.currentUserId()),
+                        criteriaBuilder.equal(root.get("assignee").get("id"), criteria.currentUserId())
+                    )
+                );
+
+                if (criteria.allowedTeamIds() != null && !criteria.allowedTeamIds().isEmpty()) {
+                    Predicate teamTasks = root.get("teamId").in(criteria.allowedTeamIds());
+                    predicates.add(criteriaBuilder.or(personalTasks, teamTasks));
+                } else {
+                    predicates.add(personalTasks);
+                }
             }
 
             // 7. Due date range filters

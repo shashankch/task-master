@@ -37,6 +37,11 @@ public class JpaTeamMemberRepository implements TeamMemberRepository {
     }
 
     @Override
+    public List<UUID> findTeamIdsByUserId(UUID userId) {
+        return repository.findTeamIdsByUserId(userId);
+    }
+
+    @Override
     public void delete(TeamMember member) {
         repository.delete(member);
     }

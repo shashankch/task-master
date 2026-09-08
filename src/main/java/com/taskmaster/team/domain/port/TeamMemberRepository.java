@@ -15,5 +15,7 @@ public interface TeamMemberRepository {
 
     boolean existsByTeamIdAndUserId(UUID teamId, UUID userId);
 
+    List<UUID> findTeamIdsByUserId(UUID userId);
+
     void delete(TeamMember member);
 }
