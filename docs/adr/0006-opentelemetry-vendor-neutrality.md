@@ -1,7 +1,10 @@
 # ADR 0006: OpenTelemetry (OTel) Standard for Vendor-Neutral Observability
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-29
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 Production-grade distributed systems require comprehensive observability across distributed tracing, application metrics, and structured log aggregation. Proprietary APM SDKs (e.g., Datadog, New Relic, Dynatrace, AWS X-Ray) create strong vendor lock-in, proprietary agent maintenance overhead, and steep licensing lock-in.

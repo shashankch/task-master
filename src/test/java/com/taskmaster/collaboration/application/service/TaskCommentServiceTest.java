@@ -119,6 +119,7 @@ class TaskCommentServiceTest {
     @DisplayName("Should throw ForbiddenException when editing comment by another user")
     void updateComment_WhenNotAuthor_ShouldThrowForbidden() {
         UUID commentId = UUID.randomUUID();
+        task.assignTo(otherUser);
         TaskComment comment = new TaskComment(task, author, null, "Initial comment");
         comment.setId(commentId);
 
@@ -128,6 +129,22 @@ class TaskCommentServiceTest {
         assertThatThrownBy(() -> commentService.updateComment(commentId, otherUser.getId(), request))
             .isInstanceOf(ForbiddenException.class)
             .hasMessageContaining("You can only edit your own comments");
+    }
+
+    @Test
+    @DisplayName("Should throw ForbiddenException when stranger tries to edit comment on personal task")
+    void updateComment_WhenStranger_ShouldThrowForbidden() {
+        UUID commentId = UUID.randomUUID();
+        UUID strangerId = UUID.randomUUID();
+        TaskComment comment = new TaskComment(task, author, null, "Initial comment");
+        comment.setId(commentId);
+
+        when(taskCommentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        UpdateCommentRequest request = new UpdateCommentRequest("Edited comment");
+        assertThatThrownBy(() -> commentService.updateComment(commentId, strangerId, request))
+            .isInstanceOf(ForbiddenException.class)
+            .hasMessageContaining("You do not have permission to access comments on this personal task");
     }
 
     @Test

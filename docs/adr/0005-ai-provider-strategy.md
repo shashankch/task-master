@@ -1,7 +1,10 @@
 # ADR 0005: Universal OpenAI-Compatible AI Provider & Gateway Strategy
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-27
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 Generative AI capabilities (task description synthesis, comment thread summarization, priority recommendation, semantic duplicate detection, and label tagging) must be flexible, vendor-agnostic, and cost-effective across diverse local, cloud, and enterprise environments without locking into proprietary vendor SDKs.

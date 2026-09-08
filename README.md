@@ -1,19 +1,23 @@
-# TaskMaster — Distributed Collaborative Task Platform
-
 <div align="center">
 
-[![CI Build](https://img.shields.io/github/actions/workflow/status/shashankch/task-master/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white&label=CI%20Build)](https://github.com/shashankch/task-master/actions/workflows/ci.yml)
-[![Java 25](https://img.shields.io/badge/Java-25%20(LTS)-f89820?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/25/)
-[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0.0-6db33f?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTel%20Standard-4a154b?style=for-the-badge&logo=opentelemetry&logoColor=white)](https://opentelemetry.io/)
-[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1%20Spec-85ea2d?style=for-the-badge&logo=openapiinitiative&logoColor=black)](./docs/api/openapi.yaml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](./LICENSE)
+# TaskMaster
+
+### Distributed Collaborative Task Platform
+
+[![CI Build](https://img.shields.io/github/actions/workflow/status/shashankch/task-master/ci.yml?branch=main&style=flat-square&logo=github-actions&logoColor=white&label=CI%20Build)](https://github.com/shashankch/task-master/actions/workflows/ci.yml)
+[![Java 25](https://img.shields.io/badge/Java-25%20(LTS)-f89820?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/25/)
+[![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4.0.0-6db33f?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169e1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis 7](https://img.shields.io/badge/Redis-7-dc382d?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-OTel%20Standard-4a154b?style=flat-square&logo=opentelemetry&logoColor=white)](https://opentelemetry.io/)
+[![OpenAPI 3.1](https://img.shields.io/badge/OpenAPI-3.1%20Spec-85ea2d?style=flat-square&logo=openapiinitiative&logoColor=black)](./docs/api/openapi.yaml)
+[![Tests Passing](https://img.shields.io/badge/Tests-110%20Passing-brightgreen?style=flat-square&logo=junit5&logoColor=white)](./src/test/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](./LICENSE)
 
 **A high-throughput, cloud-native collaborative task tracking and workflow automation platform.**  
 Engineered with **Java 25 Virtual Threads**, **Spring Boot 4.x**, **Hexagonal Modular Architecture**, **Bidirectional WebSocket/STOMP**, and **Vendor-Agnostic Generative AI**.
 
-[System Architecture](./docs/architecture.md) • [REST API Specification](./docs/api-specification.md) • [Interactive Swagger UI](http://localhost:8080/swagger-ui.html) • [OpenAPI YAML](./docs/api/openapi.yaml) • [Roadmap](./docs/ROADMAP.md) • [Architecture Decisions (ADRs)](./docs/adr/)
+[System Architecture](./docs/architecture.md) • [REST API Specification](./docs/api-specification.md) • [Interactive Swagger UI](http://localhost:8080/swagger-ui.html) • [OpenAPI YAML](./docs/api/openapi.yaml) • [Roadmap](./docs/ROADMAP.md) • [Architecture Decisions (ADRs)](./docs/adr/README.md)
 
 </div>
 
@@ -23,31 +27,55 @@ Engineered with **Java 25 Virtual Threads**, **Spring Boot 4.x**, **Hexagonal Mo
 
 TaskMaster is an enterprise-grade collaborative task tracking platform designed for high concurrency, low latency, and operational elasticity. Built as a decoupled **Hexagonal Modular Monolith**, each business context functions as an isolated domain that can be scaled monolithically or extracted into independent microservices with zero business logic refactoring.
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                       CLIENT INGRESS                                             │
-│       REST API (JSON / RFC 7807)        │       WebSocket + STOMP (/ws)      │    OpenAPI 3.1   │
-└─────────────────────────────────────────┼────────────────────────────────────┼───────────────────┘
-                                          ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                TASKMASTER MODULAR CORE (Java 25)                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────┐ │
-│  │ User & Auth  │  │ Team Context │  │ Task Engine  │  │ Collaboration│  │ Notification Center │ │
-│  │ (RS256/JWKS) │  │ (RBAC/Invite)│  │ (FTS/State)  │  │ (S3/Threads) │  │  (STOMP Broker)     │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  └─────────────────────┘ │
-│                                         │                                                        │
-│                    ┌────────────────────┴────────────────────┐                                   │
-│                    ▼                                         ▼                                   │
-│         ┌─────────────────────┐                   ┌──────────────────────┐                       │
-│         │ Universal AI Engine │                   │ OpenTelemetry Engine │                       │
-│         │ (OpenAI / Groq/OLL) │                   │ (OTLP / Micrometer)  │                       │
-│         └─────────────────────┘                   └──────────────────────┘                       │
-└─────────────────────────────────────────┬────────────────────────────────────────────────────────┘
-                                          ▼
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   INFRASTRUCTURE DATA TIER                                       │
-│   PostgreSQL 17 (FTS/JSONB)  │   Redis 7 (Rate Limit)  │  MinIO / AWS S3  │  Jaeger / Prom (OTel)│
-└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CLIENTS["🌐 Ingress & API Consumers"]
+        direction LR
+        SPA["💻 Web UI (Next.js 15 / React 19)"]
+        MOBILE["📱 Mobile & API Clients"]
+        WS_CLIENT["⚡ WebSocket STOMP Client"]
+    end
+
+    subgraph GW["🔐 Security Perimeter & Rate Limiter"]
+        direction LR
+        RATE["Redis Sliding-Window Limiter\n(Caffeine In-Memory Fallback)"]
+        JWT_AUTH["OAuth2 / RS256 JWT Filter\n(RFC 7517 JWKS Discovery)"]
+        IDOR_GATE["Multi-Tenant Authorization Gate\n(Personal Tasks & Team Workspaces)"]
+        RATE --> JWT_AUTH --> IDOR_GATE
+    end
+
+    subgraph CORE["⚙️ TaskMaster Modular Monolith Core (Java 25 LTS · Virtual Threads)"]
+        direction TB
+        subgraph MODULES["Hexagonal Domain Modules"]
+            direction LR
+            M_USER["👤 User & Identity\n(Auth, Roles, Tokens)"]
+            M_TEAM["👥 Team Workspace\n(RBAC, Invites)"]
+            M_TASK["✅ Task Engine\n(FSM, Criteria, Optimistic Lock)"]
+            M_COLLAB["💬 Collaboration\n(Threads, S3 Pre-Signed)"]
+            M_NOTIF["🔔 Notifications\n(STOMP Broker)"]
+        end
+        subgraph CROSS_CUTTING["Cross-Cutting Intelligence & Observability"]
+            direction LR
+            AI_ENG["🤖 Universal AI Engine\n(OpenAI / Groq / Gemini / Ollama)"]
+            OTEL_ENG["📊 OpenTelemetry Engine\n(OTLP Exporter / Micrometer)"]
+        end
+        MODULES --> CROSS_CUTTING
+    end
+
+    subgraph STORAGE["🗄️ Resilient Infrastructure Tier"]
+        direction LR
+        PG[("🐘 PostgreSQL 17\n(ACID · tsvector GIN · JSONB)")]
+        REDIS[("🔴 Redis 7\n(Rate Limiter · Session Cache)")]
+        S3[("🪣 AWS S3 / MinIO\n(Binary File Attachments)")]
+        JAEGER[("🔭 Jaeger Collector\n(OpenTelemetry Tracing)")]
+    end
+
+    CLIENTS --> GW
+    GW --> CORE
+    CORE --> PG
+    CORE --> REDIS
+    CORE --> S3
+    CORE --> JAEGER
 ```
 
 ---
@@ -58,6 +86,7 @@ TaskMaster is an enterprise-grade collaborative task tracking platform designed 
 - **Asymmetric RS256 Tokens**: Cryptographic access token signing with persistent PEM keys and public RFC 7517 JWKS discovery (`/.well-known/jwks.json`).
 - **Refresh Token Family Rotation**: Single-use refresh tokens with automatic family revocation upon replay attack detection.
 - **Strict Authorization & IDOR Gates**: Team-level boundary enforcement preventing unauthorized cross-tenant mutations.
+- **Multi-Tenant Search Scoping**: `TaskSpecification` dynamically scopes queries to joined workspaces and personal tasks (`teamId IN (:allowedTeamIds) OR (teamId IS NULL AND (creator = :userId OR assignee = :userId))`).
 - **Distributed Rate Limiting**: Sliding-window rate limiter using Redis ZSET with bounded Caffeine LRU cache fallback.
 
 ### 📋 Task Lifecycle & Execution Engine
@@ -177,7 +206,7 @@ TaskMaster provides interactive documentation and static OpenAPI 3.1 schemas:
 TaskMaster enforces strict automated verification across unit, integration, and architecture layers:
 
 ```bash
-# Run all automated unit and integration tests (102 tests)
+# Run all automated unit and integration tests (110 tests)
 ./gradlew test
 
 # Run Checkstyle static code analysis and architecture rules
@@ -196,21 +225,7 @@ Hexagonal boundary purity and modular isolation are enforced at compile-time via
 
 ## 🗺️ Product Roadmap
 
-Track development progress across engineering phases:
-
-- ✅ **Phase 1: Foundation & Project Setup** (Java 25, Spring Boot 4, Docker Compose, Base Entities, RFC 7807)
-- ✅ **Phase 2: User Authentication & Authorization** (RS256 JWT, JWKS, Refresh Token Rotation, Rate Limiting)
-- ✅ **Phase 3: Task Management** (State Machine, JPA Criteria, GIN Full-Text Search, Optimistic Locking)
-- ✅ **Phase 4: Team Collaboration** (Workspaces, RBAC, Threaded Comments, S3 Pre-Signed Storage)
-- ✅ **Phase 5: Real-time Notifications & AI Integration** (WebSocket STOMP, Pluggable AI Assistant)
-- ✅ **Phase 6: Production Hardening, Security Remediation & Open Standards** (Persistent RSA Keys, OTel Tracing, OpenAPI 3.1 YAML, S3 Client Engine, IDOR Authorization)
-- ⬜ **Phase 7: Advanced Search & Analytics** (Elasticsearch Cluster Sync, Velocity Metrics, Audit Trails)
-- ⬜ **Phase 8: Performance & Reliability** (Distributed Redis Rate Limiting, Resilience4j Circuit Breaking)
-- ⬜ **Phase 9: DevOps, Cloud & Multi-Platform Deployment** (Self-Hosting, PaaS Railway/Render, Distroless Containerization, Kubernetes HPA, AWS/GCP/Azure/OCI)
-- ⬜ **Phase 10: Extended Platform Capabilities** (DAG Task Dependencies, Recurring Automation, Kanban Positional Engine)
-- ⬜ **Phase 11: Modern Collaborative Web Application (Frontend)** (Next.js 15, React 19, Tailwind CSS, Kanban UI, Real-time WebSocket Client)
-
-For in-depth milestone specifications, see [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+For comprehensive milestone breakdowns, delivery statuses, and planned engineering horizons across all phases, see [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ---
 
@@ -219,7 +234,7 @@ For in-depth milestone specifications, see [`docs/ROADMAP.md`](./docs/ROADMAP.md
 - 📐 **System Architecture & C4 Diagrams**: [`docs/architecture.md`](./docs/architecture.md)
 - 📄 **API Specification & Request Payloads**: [`docs/api-specification.md`](./docs/api-specification.md)
 - 📋 **Static OpenAPI 3.1 YAML Schema**: [`docs/api/openapi.yaml`](./docs/api/openapi.yaml)
-- 🏛️ **Architecture Decision Records (ADRs)**: [`docs/adr/`](./docs/adr/)
+- 🏛️ **Architecture Decision Records (ADRs)**: [`docs/adr/README.md`](./docs/adr/README.md)
   - [ADR 0001: Modular Monolith Architecture](./docs/adr/0001-modular-monolith.md)
   - [ADR 0002: PostgreSQL & Flyway Strategy](./docs/adr/0002-postgresql.md)
   - [ADR 0003: Hexagonal Architecture Boundaries](./docs/adr/0003-hexagonal-architecture.md)
@@ -228,6 +243,7 @@ For in-depth milestone specifications, see [`docs/ROADMAP.md`](./docs/ROADMAP.md
   - [ADR 0006: OpenTelemetry (OTel) Standard for Observability](./docs/adr/0006-opentelemetry-vendor-neutrality.md)
   - [ADR 0007: Pluggable Free-Tier & Open-Source First Strategy](./docs/adr/0007-free-tier-pluggable-infrastructure.md)
   - [ADR 0008: Multi-Platform Cloud, PaaS & Container Deployment Strategy](./docs/adr/0008-multi-platform-cloud-paas-deployment-strategy.md)
+  - [ADR 0009: Multi-Tenant Task Authorization Hardening](./docs/adr/0009-multi-tenant-task-authorization-hardening.md)
 - 🤝 **Contributing Guidelines**: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 ---

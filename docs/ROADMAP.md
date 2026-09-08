@@ -1,5 +1,13 @@
 # TaskMaster Product Roadmap
 
+> **Document Metadata**
+> - **Title**: TaskMaster Product & Engineering Delivery Roadmap
+> - **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+> - **Status**: Approved / Living Engineering Roadmap
+> - **Last Updated**: 2026-09-08
+> - **Authoritative Location**: [docs/ROADMAP.md](ROADMAP.md)
+> - **Related Documents**: [System Architecture](architecture.md) | [REST API Specification](api-specification.md) | [Architecture Decisions (ADRs)](adr/README.md)
+
 A trackable overview of delivery milestones and planned capabilities for the TaskMaster collaborative platform.
 
 ---
@@ -46,12 +54,16 @@ A trackable overview of delivery milestones and planned capabilities for the Tas
   - Persistent PEM-encoded RSA key pair for zero-session-loss restarts and multi-replica consistency
   - Environment-driven CORS origin allowlist eliminating wildcard credential exposure
   - Real AWS SDK v2 S3/MinIO durable file storage adapter with pre-signed URL offloading
-  - Team-scoped authorization checks preventing IDOR vulnerabilities across task operations
+  - Scoped task search authorization (`GET /api/v1/tasks`) isolating queries to member teams and personal tasks at database level
+  - Personal task ownership boundaries (`teamId == null`) restricting read, update, status change, assign, and delete to creator/assignee
+  - Subsystem authorization parity across comments (`TaskCommentService`), attachments (`TaskAttachmentService`), and AI assistant (`AiAssistantService`)
+  - Permanent removal of unauthenticated `getTaskById(UUID)` bypass overload
   - Vendor-neutral OpenTelemetry (OTel) distributed tracing via standard OTLP protocol
   - Validated OpenAPI 3.1 YAML specification (`docs/api/openapi.yaml`) with CI export verification
   - Bounded Caffeine LRU cache fallback for sliding-window rate limiter
   - Java 25 compiler bytecode release alignment and expanded ArchUnit regression rule suite
   - Hibernate `@SQLRestriction` for automatic soft-delete query protection
+  - Negative authorization test suite expansion across unit, controller, and integration layers asserting RFC 7807 `403 Forbidden` (110 passing automated tests)
 
 ---
 

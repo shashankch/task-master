@@ -9,11 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security & Multi-Tenant Hardening
+- **Scoped Task Search Authorization**: Enforced authenticated caller identity on `GET /api/v1/tasks`, forbidding cross-team queries and automatically scoping results to the user's personal tasks and member team workspaces.
+- **Personal Task IDOR Defense**: Enforced strict creator/assignee access validation across personal task read, update, status transition, assignment, deletion, comment, attachment, and AI summarization operations.
+- **Removed Unsafe Authorization Overload**: Deleted unauthenticated `getTaskById(UUID taskId)` overload in `TaskService`.
+- **Expanded Authorization Test Suites**: Added negative unit, controller, and end-to-end integration tests verifying `403 Forbidden` across stranger access paths.
+
 ### Documentation
 - Fixed README badge links to point to active CI workflow status and official technology specifications.
 - Corrected git clone command and ADR relative markdown paths in README.
 - Added ADR 0008 establishing multi-platform deployment strategy across Self-Hosting, PaaS (Railway/Render), Kubernetes, and Major Cloud Providers (AWS/GCP/Azure/OCI).
-- Updated roadmap and architecture specifications with multi-target hosting matrix.
+- Added ADR 0009 documenting multi-tenant task and workspace authorization enforcement architecture.
+- Added comprehensive STRIDE Threat Modeling analysis and Identity & Access Management (IAM) endpoint policy matrix to system architecture specification.
+- Updated roadmap, API specifications, and architecture diagrams with modern 2026 standards.
 
 ---
 

@@ -1,5 +1,13 @@
 # TaskMaster API Specification
 
+> **Document Metadata**
+> - **Title**: TaskMaster REST API Interface & Schema Specification
+> - **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+> - **Status**: Approved / Living Specification
+> - **Last Updated**: 2026-09-08
+> - **Authoritative Location**: [docs/api-specification.md](api-specification.md)
+> - **Related Documents**: [System Architecture](architecture.md) | [OpenAPI 3.1 Spec](api/openapi.yaml) | [Phased Roadmap](ROADMAP.md) | [Architecture Decisions (ADRs)](adr/README.md)
+
 Comprehensive REST API reference for the TaskMaster collaborative task tracking platform.
 
 - **Base URL**: `http://localhost:8080/api/v1` (Development)
@@ -261,11 +269,17 @@ All non-2xx responses adhere to the **RFC 7807 `ProblemDetail`** standard:
 #### 3.2 Get Task by ID
 - **Method**: `GET /api/v1/tasks/{id}`
 - **Auth**: `Bearer <token>`
+- **Authorization**:
+  - Team tasks (`teamId != null`): User must be an active member of the task's team (`403 Forbidden` otherwise).
+  - Personal tasks (`teamId == null`): User must be the task's creator or assignee (`403 Forbidden` otherwise).
 - **Response**: `200 OK` (`TaskResponse`)
 
 #### 3.3 Search & Filter Tasks
 - **Method**: `GET /api/v1/tasks`
 - **Auth**: `Bearer <token>`
+- **Authorization & Scoping**:
+  - **Explicit Team Query (`teamId != null`)**: Requires user to be an active member of the specified team (`403 Forbidden` otherwise).
+  - **Global Search (`teamId == null`)**: Automatically scoped to tasks in all teams the user belongs to, plus the user's own personal tasks (creator or assignee). Unjoined team tasks and stranger personal tasks are strictly isolated and excluded.
 - **Query Filters**:
   - `status` (e.g. `OPEN`, `IN_PROGRESS`, `REVIEW`, `COMPLETED`, `ARCHIVED`)
   - `priority` (e.g. `LOW`, `MEDIUM`, `HIGH`, `URGENT`)
@@ -702,4 +716,49 @@ All non-2xx responses adhere to the **RFC 7807 `ProblemDetail`** standard:
 }
 ```
 
+---
 
+## 9. Planned Future Endpoints
+
+### 9.1 Advanced Search & Analytics (Phase 7)
+
+#### Full-Text Typo-Tolerant Search
+- **Method**: `GET /api/v1/search/tasks`
+- **Auth**: `Bearer <token>`
+- **Query Parameters**:
+  - `q` (search query string)
+  - `teamId` (optional UUID)
+  - `fuzzy` (boolean, default `true`)
+  - `page`, `size`
+- **Response**: `200 OK` (`PageResponse<SearchResult<TaskResponse>>` with highlighting snippets)
+
+#### Team Velocity & Throughput Metrics
+- **Method**: `GET /api/v1/analytics/teams/{teamId}/velocity`
+- **Auth**: `Bearer <token>` (Team Member only)
+- **Query Parameters**: `period` (`WEEKLY`, `MONTHLY`, `QUARTERLY`)
+- **Response**: `200 OK` (`TeamVelocityResponse` with completed story points and task completion throughput)
+
+#### Task Cycle Time & Lead Time Distribution
+- **Method**: `GET /api/v1/analytics/teams/{teamId}/cycle-time`
+- **Auth**: `Bearer <token>` (Team Member only)
+- **Response**: `200 OK` (`CycleTimeAnalyticsResponse` with percentile latency metrics: p50, p90, p99)
+
+---
+
+### 9.2 Directed Acyclic Graph (DAG) Task Dependencies (Phase 10)
+
+#### Add Prerequisite Task Dependency
+- **Method**: `POST /api/v1/tasks/{id}/dependencies`
+- **Auth**: `Bearer <token>` (Team Member or Personal Task Creator)
+- **Request Body**:
+```json
+{
+  "dependsOnTaskId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+- **Response**: `201 Created` (Enforces cycle detection via Kahn's algorithm; returns `400 Bad Request` on circular dependency)
+
+#### Get Task Dependency Graph
+- **Method**: `GET /api/v1/tasks/{id}/dag`
+- **Auth**: `Bearer <token>`
+- **Response**: `200 OK` (`TaskDagResponse` with upstream blocking tasks and downstream dependants)

@@ -1,7 +1,10 @@
 # ADR 0001: Adopt Modular Monolith Architecture
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-20
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 When designing the backend for TaskMaster, we considered whether to adopt a microservices architecture or a monolithic architecture. 

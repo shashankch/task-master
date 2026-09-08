@@ -1,7 +1,10 @@
 # ADR 0007: Pluggable Free-Tier & Open-Source First Infrastructure Strategy
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-08-29
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 Deploying, developing, and evaluating modern cloud-native systems requires minimizing operational friction, licensing barriers, and proprietary infrastructure dependencies while preserving seamless forward compatibility with managed enterprise cloud platforms.

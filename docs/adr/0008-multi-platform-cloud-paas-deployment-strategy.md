@@ -1,7 +1,10 @@
 # ADR 0008: Multi-Platform Cloud, PaaS & Container Deployment Strategy
 
-## Status
-Accepted
+- **Status**: Accepted
+- **Approval Date**: 2026-09-03
+- **Author**: TaskMaster Engineering (`shashakchandel@gmail.com`)
+
+---
 
 ## Context
 TaskMaster is designed as a cloud-native collaborative task platform that must run seamlessly across diverse hosting environments—from a developer's local laptop to enterprise Kubernetes clusters and modern Platform-as-a-Service (PaaS) providers—without requiring code modifications or proprietary vendor lock-in.

@@ -65,7 +65,7 @@ public class TaskController {
         @AuthenticationPrincipal Jwt jwt,
         @PathVariable("id") UUID id
     ) {
-        UUID currentUserId = jwt != null ? UUID.fromString(jwt.getSubject()) : null;
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
         TaskResponse response = taskService.getTaskById(id, currentUserId);
         return ResponseEntity.ok(ApiResponse.of(response));
     }
@@ -73,6 +73,7 @@ public class TaskController {
     @GetMapping
     @Operation(summary = "Search and filter tasks with multi-field sorting and pagination")
     public ResponseEntity<ApiResponse<PageResponse<TaskResponse>>> searchTasks(
+        @AuthenticationPrincipal Jwt jwt,
         @RequestParam(value = "status", required = false) TaskStatus status,
         @RequestParam(value = "priority", required = false) TaskPriority priority,
         @RequestParam(value = "assigneeId", required = false) UUID assigneeId,
@@ -84,6 +85,7 @@ public class TaskController {
         @RequestParam(value = "label", required = false) String label,
         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
         TaskFilterCriteria criteria = new TaskFilterCriteria(
             status,
             priority,
@@ -97,7 +99,7 @@ public class TaskController {
             false
         );
 
-        PageResponse<TaskResponse> response = taskService.searchTasks(criteria, pageable);
+        PageResponse<TaskResponse> response = taskService.searchTasks(criteria, currentUserId, pageable);
         return ResponseEntity.ok(ApiResponse.of(response));
     }
 
